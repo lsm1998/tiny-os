@@ -12,11 +12,20 @@ _start:
 	mov %ax, %fs
 	mov %ax, %gs
 
-	mov _start, %esp
+	mov $_start, %esp
 
 	mov $0xe, %ah
 	mov $'L', %al
 	int $0x10
+
+_read_loader:
+	mov $0x8000, %bx
+	mov $0x2, %ah
+	mov $0x2, %cx
+	mov $64, %al
+	mov $0x0080, %dx
+	int $0x13
+	jc _read_loader
 
 	jmp .
 	
