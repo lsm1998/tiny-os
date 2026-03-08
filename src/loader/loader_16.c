@@ -2,9 +2,11 @@ __asm__(".code16gcc");
 
 #include "loader.h"
 #include "comm/boot_info.h"
+#include "comm/cpu_instr.h"
 
 static boot_info_t boot_info;
 
+// 显示字符串
 static void show_message(char* message)
 {
     while (*message != '\0')
@@ -17,6 +19,7 @@ static void show_message(char* message)
     }
 }
 
+// 内存检测
 static void detect_memory(void)
 {
     show_message("Memory detection...\r\n");
@@ -58,10 +61,28 @@ static void detect_memory(void)
     show_message("Memory detection completed.\r\n");
 }
 
+uint16_t gdt_table[][4] = {
+    {0x0000, 0x0000, 0x00, 0x00}, // NULL段
+    {0x0000, 0xffff, 0x9a, 0xcf}, // 代码段
+    {0x0000, 0xffff, 0x92, 0xcf}  // 数据段
+};
+
+// 进入保护模式
+static void entry_protected_mode(void)
+{
+    show_message("Entering protected mode...\r\n");
+    cli();
+
+    uint8_t v = inb(0x92);
+    outb(0x92, v | 0x02);
+    igdt((uint32_t)gdt_table, sizeof(gdt_table));
+}
+
 void loader_entry(void)
 {
     show_message("Hello, World from 16-bit mode!\r\n");
     detect_memory();
+    entry_protected_mode();
     for (;;)
     {
     }
