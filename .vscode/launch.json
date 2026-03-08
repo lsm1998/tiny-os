@@ -59,6 +59,11 @@
                     "description": "设置体系结构",
                     "text": "-gdb-set arch i8086",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "加载loader符号文件",
+                    "text": "add-symbol-file ${workspaceFolder}/build/src/loader/loader.elf 0x8000",
+                    "ignoreFailures": false
                 }
             ],
         },
@@ -117,6 +122,11 @@
                     "description": "设置体系结构",
                     "text": "-gdb-set arch i8086",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "加载loader符号文件",
+                    "text": "add-symbol-file ${workspaceFolder}/build/src/loader/loader.elf 0x8000",
+                    "ignoreFailures": false
                 }
             ],
         }

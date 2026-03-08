@@ -6,6 +6,7 @@ IMAGE_DIR="${IMAGE_DIR:-$PROJECT_DIR/image}"
 DISK1_IMG="${DISK1_IMG:-$IMAGE_DIR/disk1.img}"
 DISK2_IMG="${DISK2_IMG:-$IMAGE_DIR/disk2.img}"
 BOOT_BIN="${BOOT_BIN:-$IMAGE_DIR/boot.bin}"
+LOADER_BIN="${LOADER_BIN:-$IMAGE_DIR/loader.bin}"
 DISK1_SIZE_MB="${DISK1_SIZE_MB:-16}"
 DISK2_SIZE_MB="${DISK2_SIZE_MB:-32}"
 
@@ -33,6 +34,14 @@ prepare_local_disks() {
 require_boot_bin() {
     if [ ! -f "$BOOT_BIN" ]; then
         echo "error: $BOOT_BIN not found"
+        echo "hint: run 'make build' first"
+        exit 1
+    fi
+}
+
+require_loader_bin() {
+    if [ ! -f "$LOADER_BIN" ]; then
+        echo "error: $LOADER_BIN not found"
         echo "hint: run 'make build' first"
         exit 1
     fi

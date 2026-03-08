@@ -152,7 +152,7 @@ prepare() {
     echo "[1/4] Building boot image"
     make -C "$PROJECT_DIR" build
 
-    echo "[2/4] Writing boot.bin into $IMAGE_DIR/disk1.img"
+    echo "[2/4] Writing boot/loader into $IMAGE_DIR/disk1.img"
     bash "$SCRIPT_DIR/img-write-osx.sh"
 
     if [ ! -f "$BOOT_ELF" ]; then
