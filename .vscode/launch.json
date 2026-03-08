@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) 调试 Boot (QEMU)",
+            "name": "(gdb) 后台调试",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/source/boot/boot.elf",
@@ -91,6 +91,65 @@
                 //     "text": "add-symbol-file ./build/source/loop/loop.elf 0x83000000",
                 //     "ignoreFailures": false
                 // },
+                {
+                    "description": "运行至0x7c00",
+                    "text": "-exec-until *0x7c00",
+                    "ignoreFailures": false
+                },
+            ],
+        },
+        {
+            "name": "(gdb) QEMU界面调试",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/source/boot/boot.elf",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "x86_64-elf-gdb",
+            "miDebuggerServerAddress": "127.0.0.1:1234",
+            "targetArchitecture": "x86",
+            "stopAtConnect": true,
+            "serverLaunchTimeout": 30000,
+            "windows": {
+                "preLaunchTask": "调试准备",
+            },
+            "linux": {
+                "preLaunchTask": "调试准备",
+                "miDebuggerPath": "gdb",
+            },
+            "osx": {
+                "preLaunchTask": "VSCode 调试准备（保留QEMU界面）",
+                "postDebugTask": "停止 QEMU 调试（保留QEMU界面）",
+                "miDebuggerPath": "gdb"
+            },
+            "customLaunchSetupCommands": [],
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "将反汇编风格设置为 Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "设置体系结构",
+                    "text": "-gdb-set arch i8086",
+                    "ignoreFailures": true
+                }
+            ],
+            "postRemoteConnectCommands": [
+                {
+                    "description": "加载boot符号文件",
+                    "text": "-file-symbol-file ./build/source/boot/boot.elf",
+                    "ignoreFailures": false
+                },
                 {
                     "description": "运行至0x7c00",
                     "text": "-exec-until *0x7c00",

@@ -31,6 +31,46 @@
             "problemMatcher": []
         },
         {
+            "label": "VSCode 调试准备（保留QEMU界面）",
+            "type": "shell",
+            "command": "bash ${workspaceFolder}/script/vscode-debug-osx-gui.sh prepare",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "custom",
+                "pattern": {
+                    "regexp": "^(__never_matches__)$: (.*)$",
+                    "file": 1,
+                    "message": 2
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^\\[1/4\\]",
+                    "endsPattern": "^\\[4/4\\] QEMU GUI gdb stub is ready on 127\\.0\\.0\\.1:1234$"
+                }
+            }
+        },
+        {
+            "label": "停止 QEMU 调试（保留QEMU界面）",
+            "type": "shell",
+            "command": "bash ${workspaceFolder}/script/vscode-debug-osx-gui.sh stop",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "never",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "写映像文件",
             "type": "shell",
             "command": "bash ${workspaceFolder}/script/img-write-osx.sh",
