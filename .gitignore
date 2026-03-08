@@ -1,0 +1,9 @@
+/cmake-build*
+
+/build*
+
+/image/boot.*
+/image/disk1.*
+/image/disk2.*
+
+.idea
