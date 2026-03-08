@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) 后台调试",
+            "name": "(gdb) 后台手动调试",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/source/boot/boot.elf",
@@ -13,20 +13,25 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
+            "logging": {
+                "engineLogging": true,
+                "trace": true,
+                "traceResponse": true
+            },
             "externalConsole": false,
             "MIMode": "gdb",
             "miDebuggerPath": "x86_64-elf-gdb",
             "miDebuggerServerAddress": "127.0.0.1:1234",
             "targetArchitecture": "x86",
-            "stopAtConnect": true,
+            "stopAtConnect": false,
             "serverLaunchTimeout": 30000,
-            // 启动gdb之前，做些准备：写映像文件、启动qemu
+            "launchCompleteCommand": "exec-continue",
             "windows": {
-                "preLaunchTask": "调试准备", // 仅在windows下可自动运行
+                "preLaunchTask": "调试准备",
             },
             "linux": {
-                "preLaunchTask": "调试准备", // 仅在windows下可自动运行
-                "miDebuggerPath": "gdb", // linux下的特殊配置
+                "preLaunchTask": "调试准备",
+                "miDebuggerPath": "gdb",
             },
             "osx": {
                 "preLaunchTask": "VSCode 调试准备",
@@ -35,6 +40,11 @@
             },
             "customLaunchSetupCommands": [],
             "setupCommands": [
+                {
+                    "description": "在连接远程 QEMU 前加载 boot 符号，确保 UI 源码断点能绑定到 start.S",
+                    "text": "-file-exec-and-symbols ${workspaceFolder}/build/source/boot/boot.elf",
+                    "ignoreFailures": false
+                },
                 {
                     "description": "为 gdb 启用整齐打印",
                     "text": "-enable-pretty-printing",
@@ -51,55 +61,9 @@
                     "ignoreFailures": true
                 }
             ],
-            // gdb连接后的设置
-            "postRemoteConnectCommands": [
-                {
-                    "description": "加载boot符号文件",
-                    "text": "-file-symbol-file ./build/source/boot/boot.elf",
-                    "ignoreFailures": false
-                },       
-                // {
-                //     "description": "加载内核符号文件",
-                //      "text": "add-symbol-file ./build/source/kernel/kernel.elf 0x10000",
-                //     "ignoreFailures": false
-                // },
-                // {
-                //     "description": "加载load符号文件",
-                //     "text": "add-symbol-file ./build/source/loader/loader.elf 0x8000",
-                //     "ignoreFailures": false
-                // },
-                // {
-                //     "description": "加载boot符号文件",
-                //     "text": "add-symbol-file ./build/source/boot/boot.elf 0x7c00",
-                //     "ignoreFailures": false
-                // },
-                // {
-                //     "description": "加载init符号文件",
-                //     // 为了方便调试，不同应用的起始地址应当不同，这样才能正确单步调度和设置断点
-                //     "text": "add-symbol-file ./build/source/init/init.elf 0x82000000",
-                //     "ignoreFailures": false
-                // },
-                // {
-                //     "description": "加载shell符号文件",
-                //     // 为了方便调试，不同应用的起始地址应当不同，这样才能正确单步调度和设置断点
-                //     "text": "add-symbol-file ./build/source/shell/shell.elf 0x81000000",
-                //     "ignoreFailures": false
-                // },
-                // {
-                //     "description": "加载loop符号文件",
-                //     // 为了方便调试，不同应用的起始地址应当不同，这样才能正确单步调度和设置断点
-                //     "text": "add-symbol-file ./build/source/loop/loop.elf 0x83000000",
-                //     "ignoreFailures": false
-                // },
-                {
-                    "description": "运行至0x7c00",
-                    "text": "-exec-until *0x7c00",
-                    "ignoreFailures": false
-                },
-            ],
         },
         {
-            "name": "(gdb) QEMU界面调试",
+            "name": "(gdb) QEMU界面手动调试",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/source/boot/boot.elf",
@@ -107,13 +71,19 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
+            "logging": {
+                "engineLogging": true,
+                "trace": true,
+                "traceResponse": true
+            },
             "externalConsole": false,
             "MIMode": "gdb",
             "miDebuggerPath": "x86_64-elf-gdb",
             "miDebuggerServerAddress": "127.0.0.1:1234",
             "targetArchitecture": "x86",
-            "stopAtConnect": true,
+            "stopAtConnect": false,
             "serverLaunchTimeout": 30000,
+            "launchCompleteCommand": "exec-continue",
             "windows": {
                 "preLaunchTask": "调试准备",
             },
@@ -129,6 +99,11 @@
             "customLaunchSetupCommands": [],
             "setupCommands": [
                 {
+                    "description": "在连接远程 QEMU 前加载 boot 符号，确保 UI 源码断点能绑定到 start.S",
+                    "text": "-file-exec-and-symbols ${workspaceFolder}/build/source/boot/boot.elf",
+                    "ignoreFailures": false
+                },
+                {
                     "description": "为 gdb 启用整齐打印",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
@@ -143,18 +118,6 @@
                     "text": "-gdb-set arch i8086",
                     "ignoreFailures": true
                 }
-            ],
-            "postRemoteConnectCommands": [
-                {
-                    "description": "加载boot符号文件",
-                    "text": "-file-symbol-file ./build/source/boot/boot.elf",
-                    "ignoreFailures": false
-                },
-                {
-                    "description": "运行至0x7c00",
-                    "text": "-exec-until *0x7c00",
-                    "ignoreFailures": false
-                },
             ],
         }
     ]

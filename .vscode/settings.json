@@ -2,6 +2,7 @@
     "cmake.configureOnOpen": false,
     "cmake.sourceDirectory": "${workspaceFolder}/.",
     "C_Cpp.errorSquiggles": "disabled",
+    "debug.allowBreakpointsEverywhere": true,
     "files.associations": {
         "dirent.h": "c",
         "lib_syscall.h": "c",
