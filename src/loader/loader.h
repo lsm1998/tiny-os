@@ -3,7 +3,7 @@
 
 #include "comm/boot_info.h"
 
-typedef struct SMAP_entry
+typedef struct SMAP_entry_t
 {
     uint32_t BaseL;
     uint32_t BaseH;
@@ -11,7 +11,7 @@ typedef struct SMAP_entry
     uint32_t LengthH;
     uint32_t Type;
     uint32_t ACPI;
-} __attribute__((packed)) SMAP_entry;
+} __attribute__((packed)) SMAP_entry_t;
 
 void loader_entry(void);
 
