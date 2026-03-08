@@ -1,3 +1,4 @@
+// clang-format off
   	// 16位代码，务必加上
   	.code16
  	.text

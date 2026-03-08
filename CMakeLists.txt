@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.5)
 
 # 保存一些通用的配置
 set(CMAKE_VERBOSE_MAKEFILE on)   # 开启输出编译详细过程的提示
+set(CMAKE_C_STANDARD 11)        # 设置C语言标准为C11
+set(CMAKE_C_STANDARD_REQUIRED ON)  # 强制要求使用C11标准
+set(CMAKE_C_EXTENSIONS OFF)     # 禁止使用编译器特定的扩展
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  # 生成compile_commands.json文件，供编辑器使用
 
 # gcc工具链前缀，根据实际情况做不同的设置
 # 目前mac和win上使用x86_64-elf-
@@ -39,8 +43,6 @@ enable_language(ASM)
 # 头文件搜索路径
 include_directories(
     ${PROJECT_SOURCE_DIR}/src
-#     ${PROJECT_SOURCE_DIR}/src/kernel/include
-#     ${PROJECT_SOURCE_DIR}/../newlib/i686-elf/include
 )
 
 # 底层的若干子项目：含内核及应用程序
