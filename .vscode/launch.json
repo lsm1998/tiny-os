@@ -8,15 +8,15 @@
             "name": "(gdb) 后台手动调试",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/source/boot/boot.elf",
+            "program": "${workspaceFolder}/build/src/boot/boot.elf",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "logging": {
-                "engineLogging": true,
-                "trace": true,
-                "traceResponse": true
+                "engineLogging": false,
+                "trace": false,
+                "traceResponse": false
             },
             "externalConsole": false,
             "MIMode": "gdb",
@@ -42,7 +42,7 @@
             "setupCommands": [
                 {
                     "description": "在连接远程 QEMU 前加载 boot 符号，确保 UI 源码断点能绑定到 start.S",
-                    "text": "-file-exec-and-symbols ${workspaceFolder}/build/source/boot/boot.elf",
+                    "text": "-file-exec-and-symbols ${workspaceFolder}/build/src/boot/boot.elf",
                     "ignoreFailures": false
                 },
                 {
@@ -66,15 +66,15 @@
             "name": "(gdb) QEMU界面手动调试",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/source/boot/boot.elf",
+            "program": "${workspaceFolder}/build/src/boot/boot.elf",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "logging": {
-                "engineLogging": true,
-                "trace": true,
-                "traceResponse": true
+                "engineLogging": false,
+                "trace": false,
+                "traceResponse": false
             },
             "externalConsole": false,
             "MIMode": "gdb",
@@ -100,7 +100,7 @@
             "setupCommands": [
                 {
                     "description": "在连接远程 QEMU 前加载 boot 符号，确保 UI 源码断点能绑定到 start.S",
-                    "text": "-file-exec-and-symbols ${workspaceFolder}/build/source/boot/boot.elf",
+                    "text": "-file-exec-and-symbols ${workspaceFolder}/build/src/boot/boot.elf",
                     "ignoreFailures": false
                 },
                 {

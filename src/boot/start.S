@@ -1,9 +1,10 @@
-	#include "boot.h"
+		#include "boot.h"
 
   	// 16位代码，务必加上
   	.code16
  	.text
 	.global _start
+	.extern boot_entry
 _start:
 	mov $0, %ax
 	mov %ax, %ds
@@ -27,6 +28,7 @@ _read_loader:
 	int $0x13
 	jc _read_loader
 
+	jmp boot_entry
 	jmp .
 	
 	// 引导结束段

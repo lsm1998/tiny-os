@@ -4,6 +4,7 @@
     "C_Cpp.errorSquiggles": "disabled",
     "debug.allowBreakpointsEverywhere": true,
     "files.associations": {
+        "*.S": "cpp",
         "dirent.h": "c",
         "lib_syscall.h": "c",
         "task.h": "c",

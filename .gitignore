@@ -5,6 +5,7 @@
 /image/boot.*
 /image/disk1.*
 /image/disk2.*
+/image/loader.*
 
 .idea
 

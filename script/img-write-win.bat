@@ -1,22 +1,49 @@
-@echo off
-setlocal
-
-set SCRIPT_DIR=%~dp0
-for %%I in ("%SCRIPT_DIR%..") do set PROJECT_DIR=%%~fI
-set IMAGE_DIR=%PROJECT_DIR%\image
-set BOOT_BIN=%IMAGE_DIR%\boot.bin
-set DISK1_NAME=%IMAGE_DIR%\disk1.img
-set DISK2_NAME=%IMAGE_DIR%\disk2.img
-
-if not exist "%IMAGE_DIR%" mkdir "%IMAGE_DIR%"
-
-if not exist "%BOOT_BIN%" (
-    echo boot.bin not found in "%IMAGE_DIR%"
-    echo hint: run make build first
-    exit /b 1
+if not exist "disk1.vhd" (
+    echo "disk1.vhd not found in image directory"
+    notepad win_error.txt
+    exit -1
 )
 
-if not exist "%DISK1_NAME%" fsutil file createnew "%DISK1_NAME%" 16777216 >nul
-if not exist "%DISK2_NAME%" fsutil file createnew "%DISK2_NAME%" 33554432 >nul
+if not exist "disk2.vhd" (
+    echo "disk2.vhd not found in image directory"
+    notepad win_error.txt
+    exit -1
+)
 
-dd if="%BOOT_BIN%" of="%DISK1_NAME%" bs=512 conv=notrunc count=1
+set DISK1_NAME=disk1.vhd
+
+dd if=boot.bin of=%DISK1_NAME% bs=512 conv=notrunc count=1
+
+dd if=loader.bin of=%DISK1_NAME% bs=512 conv=notrunc seek=1
+
+dd if=kernel.elf of=%DISK1_NAME% bs=512 conv=notrunc seek=100
+
+@REM dd if=init.elf of=%DISK1_NAME% bs=512 conv=notrunc seek=5000
+@dd if=shell.elf of=%DISK1_NAME% bs=512 conv=notrunc seek=5000
+
+set DISK2_NAME=disk2.vhd
+set TARGET_PATH=k
+echo select vdisk file="%cd%\%DISK2_NAME%" >a.txt
+echo attach vdisk >>a.txt
+echo select partition 1 >> a.txt
+echo assign letter=%TARGET_PATH% >> a.txt
+diskpart /s a.txt
+if %errorlevel% neq 0 (
+    echo "attach disk2.vhd failed"
+    notepad win_error.txt
+    exit -1
+)
+del a.txt
+
+
+copy /Y *.elf %TARGET_PATH%:\
+
+echo select vdisk file="%cd%\%DISK2_NAME%" >a.txt
+echo detach vdisk >>a.txt
+diskpart /s a.txt
+if %errorlevel% neq 0 (
+    echo "detach disk2.vhd failed"
+    notepad win_error.txt
+    exit -1
+)
+del a.txt
