@@ -3,7 +3,14 @@
 
 #include "types.h"
 
+// 定义最大内存区域数量
 #define BOOT_RAM_REGION_MAX 10
+
+// 每个扇区的字节数
+#define SECTOR_SIZE 512
+
+// 内核加载地址
+#define SYS_KERNEL_LOAD_ADDR (1024 * 1024) // 1MB
 
 typedef struct boot_info_t
 {
