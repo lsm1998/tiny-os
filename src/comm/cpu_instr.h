@@ -57,15 +57,8 @@ static inline void write_cr0(uint32_t value)
 
 static inline void far_jump(uint16_t selector, uint32_t offset)
 {
-    struct
-    {
-        uint32_t offset;
-        uint16_t selector;
-    } __attribute__((packed)) far_ptr = {
-        .offset = offset,
-        .selector = selector};
-
-    __asm__ volatile("ljmp *%0" : : "m"(far_ptr));
+    uint32_t addr[] = {offset, selector};
+    __asm__ volatile("ljmpl *(%[a])" ::[a] "r"(addr));
 }
 
 #endif // __CPU_INSTR_H
