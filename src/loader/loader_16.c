@@ -62,9 +62,9 @@ static void detect_memory(void)
 }
 
 uint16_t gdt_table[][4] = {
-    {0x0000, 0x0000, 0x00, 0x00}, // NULL段
-    {0x0000, 0xffff, 0x9a, 0xcf}, // 代码段
-    {0x0000, 0xffff, 0x92, 0xcf}  // 数据段
+    {0x0000, 0x0000, 0x0000, 0x0000}, // NULL段
+    {0xffff, 0x0000, 0x9a00, 0x00cf}, // 代码段
+    {0xffff, 0x0000, 0x9200, 0x00cf}  // 数据段
 };
 
 // 进入保护模式
@@ -75,7 +75,15 @@ static void entry_protected_mode(void)
 
     uint8_t v = inb(0x92);
     outb(0x92, v | 0x02);
-    igdt((uint32_t)gdt_table, sizeof(gdt_table));
+    lgdt((uint32_t)gdt_table, sizeof(gdt_table));
+
+    uint32_t cr0 = read_cr0();
+
+    // 设置PE位，进入保护模式
+    write_cr0(cr0 | 0x1);
+
+    // 跳转到保护模式的入口点
+    far_jump(0x08, (uint32_t)protected_mode_entry);
 }
 
 void loader_entry(void)

@@ -30,17 +30,42 @@ static inline uint8_t inb(uint16_t port)
     return value;
 }
 
-static inline void igdt(uint32_t start, uint32_t size)
+static inline void lgdt(uint32_t base, uint16_t size)
 {
-    struct {
+    struct
+    {
         uint16_t limit;
-        uint32_t start0_15;
-        uint32_t start16_31;
-    } gdt;
-    gdt.limit = size - 1;
-    gdt.start0_15 = start & 0xFFFF;
-    gdt.start16_31 = (start >> 16) & 0xFFFF;
+        uint32_t base;
+    } __attribute__((packed)) gdt = {
+        .limit = size - 1,
+        .base = base};
+
     __asm__ volatile("lgdt %0" : : "m"(gdt));
+}
+
+static inline uint32_t read_cr0(void)
+{
+    uint32_t value;
+    __asm__ volatile("mov %%cr0, %[v]" : [v] "=r"(value));
+    return value;
+}
+
+static inline void write_cr0(uint32_t value)
+{
+    __asm__ volatile("mov %[v], %%cr0" : : [v] "r"(value));
+}
+
+static inline void far_jump(uint16_t selector, uint32_t offset)
+{
+    struct
+    {
+        uint32_t offset;
+        uint16_t selector;
+    } __attribute__((packed)) far_ptr = {
+        .offset = offset,
+        .selector = selector};
+
+    __asm__ volatile("ljmp *%0" : : "m"(far_ptr));
 }
 
 #endif // __CPU_INSTR_H

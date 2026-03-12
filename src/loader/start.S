@@ -6,3 +6,9 @@
 	.extern loader_entry
 _start:
 	jmp loader_entry
+
+	.code32
+	.text
+	.global protected_mode_entry
+protected_mode_entry:
+	jmp .

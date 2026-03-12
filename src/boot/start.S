@@ -1,5 +1,5 @@
 // clang-format off
-		#include "boot.h"
+	#include "boot.h"
 
   	// 16位代码，务必加上
   	.code16

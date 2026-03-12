@@ -3,6 +3,8 @@
 
 #include "comm/boot_info.h"
 
+void protected_mode_entry(void);
+
 typedef struct SMAP_entry_t
 {
     uint32_t BaseL;
