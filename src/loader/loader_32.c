@@ -37,6 +37,8 @@ static void read_disk(uint32_t sector, uint32_t count, void* buffer)
 void load_kernel(void)
 {
     read_disk(100, 500, (void*)SYS_KERNEL_LOAD_ADDR);
+    void (*kernel_init)(void) = (void (*)(void))SYS_KERNEL_LOAD_ADDR;
+    kernel_init();
     for (;;)
     {
     }

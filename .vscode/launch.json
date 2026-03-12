@@ -64,6 +64,11 @@
                     "description": "加载loader符号文件",
                     "text": "add-symbol-file ${workspaceFolder}/build/src/loader/loader.elf 0x8000",
                     "ignoreFailures": false
+                },
+                {
+                    "description": "加载kernel符号文件",
+                    "text": "add-symbol-file ${workspaceFolder}/build/src/kernel/kernel.elf 0x10000",
+                    "ignoreFailures": false
                 }
             ],
         },
@@ -126,6 +131,11 @@
                 {
                     "description": "加载loader符号文件",
                     "text": "add-symbol-file ${workspaceFolder}/build/src/loader/loader.elf 0x8000",
+                    "ignoreFailures": false
+                },
+                {
+                    "description": "加载kernel符号文件",
+                    "text": "add-symbol-file ${workspaceFolder}/build/src/kernel/kernel.elf 0x10000",
                     "ignoreFailures": false
                 }
             ],

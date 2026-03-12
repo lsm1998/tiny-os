@@ -48,7 +48,7 @@ include_directories(
 # 底层的若干子项目：含内核及应用程序
 add_subdirectory(./src/boot)
 add_subdirectory(./src/loader)
-# add_subdirectory(./src/kernel)
+add_subdirectory(./src/kernel)
 # add_subdirectory(./src/applib)
 # add_subdirectory(./src/shell)
 # add_subdirectory(./src/init)

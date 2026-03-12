@@ -6,6 +6,7 @@
 /image/disk1.*
 /image/disk2.*
 /image/loader.*
+/image/kernel.*
 
 .idea
 
