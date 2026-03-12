@@ -22,4 +22,6 @@ typedef struct boot_info_t
     int ram_region_count;
 } boot_info_t;
 
+extern boot_info_t boot_info;
+
 #endif // BOOT_INFO_H

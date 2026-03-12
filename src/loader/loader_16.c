@@ -4,7 +4,7 @@ __asm__(".code16gcc");
 #include "comm/boot_info.h"
 #include "comm/cpu_instr.h"
 
-static boot_info_t boot_info;
+boot_info_t boot_info;
 
 // 显示字符串
 static void show_message(char* message)
