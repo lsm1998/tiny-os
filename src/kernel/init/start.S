@@ -7,7 +7,7 @@ _start:
     push %ebp
     // mov %esp, %ebp
     // mov 0x8(%ebp), %eax
-    mov 4(%esp), %eax
+    mov 8(%esp), %eax
     push %eax
     call kernel_init
     jmp $KERNEL_SELECTOR_CS, $gdt_reload
@@ -18,4 +18,8 @@ gdt_reload:
 	mov %ax, %es
 	mov %ax, %fs
 	mov %ax, %gs
+    mov $(stack + KERNEL_STACK_SIZE), %esp
     jmp init_main
+
+    .bss
+.comm stack, KERNEL_STACK_SIZE
