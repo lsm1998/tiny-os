@@ -50,6 +50,19 @@ static inline void lgdt(uint32_t base, uint16_t size)
     __asm__ volatile("lgdt %0" : : "m"(gdt));
 }
 
+static inline void lidt(uint32_t base, uint16_t size)
+{
+    struct
+    {
+        uint16_t limit;
+        uint32_t base;
+    } __attribute__((packed)) idt = {
+        .limit = size - 1,
+        .base = base};
+
+    __asm__ volatile("lidt %0" : : "m"(idt));
+}
+
 static inline uint32_t read_cr0(void)
 {
     uint32_t value;

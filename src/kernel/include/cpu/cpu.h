@@ -22,6 +22,18 @@ typedef struct gate_desc_t
 } gate_desc_t;
 #pragma pack()
 
+// 中断门类型
+#define GATE_TYPE_INT (0xE << 8)
+
+// P位，表示门存在
+#define GATE_P_PRESENT (1 << 15)
+
+// DPL位，表示特权级0
+#define GATE_DPL0 (0 << 13)
+
+// DPL位，表示特权级3
+#define GATE_DPL3 (3 << 13)
+
 // G位，表示段界限以4KB为单位
 #define SEG_G (1 << 15)
 

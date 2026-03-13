@@ -21,3 +21,10 @@ gdt_reload:
 
     .bss
 .comm stack, KERNEL_STACK_SIZE
+
+    .text
+    .global exception_handler
+
+exception_handler:
+    iret
+    
