@@ -14,6 +14,36 @@ typedef struct segment_desc_t
 } segment_desc_t;
 #pragma pack()
 
+// G位，表示段界限以4KB为单位
+#define SEG_G (1 << 15)
+
+// D位，表示32位段
+#define SEG_D (1 << 14)
+
+// P位，表示段存在
+#define SEG_P_PRESENT (1 << 7)
+
+// 特权级0
+#define SEG_DPL0 (0 << 5) 
+
+// 特权级3
+#define SEG_DPL3 (3 << 5)
+
+// S=0，系统段
+#define SEG_S_SYSTEM 0
+
+// S=1，代码/数据段
+#define SEG_S_NORMAL (1 << 4)
+
+// 代码段
+#define SEG_TYPE_CODE (1 << 3)
+
+// 数据段
+#define SEG_TYPE_DATA (0 << 3)
+
+// 可读写
+#define SEG_TYPE_RW (1 << 1)
+
 void cpu_init(void);
 
 void segment_desc_set(int selector, uint32_t base, uint32_t limit, uint16_t attr);
