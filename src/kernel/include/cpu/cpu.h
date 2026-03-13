@@ -12,6 +12,14 @@ typedef struct segment_desc_t
     uint16_t attr;      // 段属性
     uint8_t base31_24;  // 段基址的高8位
 } segment_desc_t;
+
+typedef struct gate_desc_t
+{
+    uint16_t offset15_0;  // 偏移地址的低16位
+    uint16_t selector;    // 代码段选择子
+    uint16_t attr;        // 门描述符属性
+    uint16_t offset31_16; // 偏移地址的高16位
+} gate_desc_t;
 #pragma pack()
 
 // G位，表示段界限以4KB为单位
@@ -24,7 +32,7 @@ typedef struct segment_desc_t
 #define SEG_P_PRESENT (1 << 7)
 
 // 特权级0
-#define SEG_DPL0 (0 << 5) 
+#define SEG_DPL0 (0 << 5)
 
 // 特权级3
 #define SEG_DPL3 (3 << 5)
@@ -47,5 +55,7 @@ typedef struct segment_desc_t
 void cpu_init(void);
 
 void segment_desc_set(int selector, uint32_t base, uint32_t limit, uint16_t attr);
+
+void gate_desc_set(gate_desc_t *desc, uint32_t offset, uint16_t selector, uint16_t attr);
 
 #endif // __CPU_H__

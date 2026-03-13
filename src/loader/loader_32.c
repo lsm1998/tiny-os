@@ -9,7 +9,7 @@
 #define ELF32_PT_LOAD 1
 #define ELF32_PROGRAM_HEADER_MAX 16
 
-typedef struct
+typedef struct elf32_header_t
 {
     uint8_t e_ident[ELF32_IDENT_SIZE];
     uint16_t e_type;
@@ -27,7 +27,7 @@ typedef struct
     uint16_t e_shstrndx;
 } __attribute__((packed)) elf32_header_t;
 
-typedef struct
+typedef struct elf32_program_header_t
 {
     uint32_t p_type;
     uint32_t p_offset;
@@ -41,6 +41,8 @@ typedef struct
 
 static uint8_t kernel_sector_buffer[SECTOR_SIZE];
 static elf32_header_t kernel_header;
+
+// 小内存环境里只缓存 ELF 头和 program header，再按需读取各段内容。
 static elf32_program_header_t kernel_program_headers[ELF32_PROGRAM_HEADER_MAX];
 
 static void halt_forever(void)
@@ -112,6 +114,7 @@ static void read_kernel_bytes(uint32_t file_offset, uint32_t size, void* buffer)
 
     while (size > 0)
     {
+        // 内核在磁盘上仍然是 ELF 文件，这里按文件偏移换算回实际扇区位置
         uint32_t sector = SYS_KERNEL_START_SECTOR + (file_offset / SECTOR_SIZE);
         uint32_t sector_offset = file_offset % SECTOR_SIZE;
         uint32_t chunk_size = SECTOR_SIZE - sector_offset;
@@ -151,6 +154,7 @@ static void load_elf_segment(const elf32_program_header_t* program_header)
         halt_forever();
     }
 
+    // 先清零整个内存段，既能处理 .bss，也能覆盖 file size 之后的尾部空洞
     zero_bytes((void*)segment_addr, program_header->p_memsz);
 
     if (program_header->p_filesz > 0)
@@ -161,6 +165,7 @@ static void load_elf_segment(const elf32_program_header_t* program_header)
 
 void load_kernel(void)
 {
+    // 先读取 ELF 头，拿到 program header 表和最终入口地址
     read_kernel_bytes(0, sizeof(kernel_header), &kernel_header);
     if (!elf32_header_is_valid(&kernel_header) ||
         kernel_header.e_phentsize != sizeof(elf32_program_header_t) ||
@@ -174,6 +179,7 @@ void load_kernel(void)
                       kernel_header.e_phnum * sizeof(elf32_program_header_t),
                       kernel_program_headers);
 
+    // loader 只关心需要映射到内存的 PT_LOAD 段
     for (uint32_t i = 0; i < kernel_header.e_phnum; i++)
     {
         if (kernel_program_headers[i].p_type == ELF32_PT_LOAD)
@@ -187,6 +193,7 @@ void load_kernel(void)
         halt_forever();
     }
 
+    // 入口仍然按旧接口接收 boot_info_t*，只是地址改为来自 ELF 的 e_entry
     ((void (*)(boot_info_t*))kernel_header.e_entry)(&boot_info);
 
     halt_forever();

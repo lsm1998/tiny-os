@@ -9,6 +9,7 @@ void kernel_init(boot_info_t* boot_info)
 
 void init_main(void)
 {
+    int a = 3/0; // 故意制造一个除零错误来测试异常处理
     for (;;)
     {
         // 内核主循环
