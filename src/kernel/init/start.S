@@ -32,19 +32,25 @@ exception_handler_\name:
         push $0
     .endif
     push $\num
+
     pusha
     push %ds
     push %es
     push %fs
     push %gs
+
     push %esp
+
     call do_handler_\name
+
     add $4, %esp
+
     pop %gs
     pop %fs
     pop %es
     pop %ds
     popa
+    
     add $8, %esp
     iret
 .endm

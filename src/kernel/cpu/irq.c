@@ -7,6 +7,8 @@ static gate_desc_t idt_table[IDT_TABLE_SIZE];
 
 void exception_handler_unknown(void);
 
+void exception_handler_divide_error(void);
+
 static void do_handler_default(exception_frame_t* frame, const char* msg)
 {
     for (;;)
@@ -32,7 +34,7 @@ void irq_init(void)
                       GATE_P_PRESENT | GATE_DPL0 | GATE_TYPE_INT);
     }
 
-    irq_install(IRQ0_DE, do_handler_divide_error);
+    irq_install(IRQ0_DE,  (irq_handler_t)exception_handler_divide_error);
 
     lidt((uint32_t)idt_table, sizeof(idt_table));
 }
