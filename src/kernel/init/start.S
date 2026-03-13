@@ -23,8 +23,21 @@ gdt_reload:
 .comm stack, KERNEL_STACK_SIZE
 
     .text
+    .extern do_exception_handler
     .global exception_handler
 
 exception_handler:
+    pusha
+    push %ds
+    push %es
+    push %fs
+    push %gs
+    push %esp
+    call do_exception_handler
+    add $4, %esp
+    pop %gs
+    pop %fs
+    pop %es
+    pop %ds
+    popa
     iret
-    
