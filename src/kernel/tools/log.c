@@ -46,3 +46,12 @@ void log_printf(const char* fmt, ...)
     outb(COM1_PORT, '\r');
     outb(COM1_PORT, '\n');
 }
+
+void panic(const char* file, int line, const char* function, const char* message)
+{
+    log_printf("Panic at %s:%d in %s: %s", file, line, function, message);
+    for (;;)
+    {
+        hlt();
+    }
+}

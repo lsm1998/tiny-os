@@ -10,6 +10,8 @@ void kernel_strncpy(char* dest, const char* src, size_t n);
 
 void kernel_vsnprintf(char* buffer, size_t size, const char* fmt, va_list args);
 
+void kernel_snprintf(char* buffer, size_t size, const char* fmt, ...);
+
 void kernel_strcat(char* dest, const char* src);
 
 void kernel_strncat(char* dest, const char* src, size_t n);

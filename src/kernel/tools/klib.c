@@ -262,3 +262,16 @@ void kernel_itoa(int value, char* str, int base)
     }
     *ptr = '\0';
 }
+
+void kernel_snprintf(char* buffer, size_t size, const char* fmt, ...)
+{
+    if (buffer == NULL || fmt == NULL)
+    {
+        return;
+    }
+
+    va_list args;
+    va_start(args, fmt);
+    kernel_vsnprintf(buffer, size, fmt, args);
+    va_end(args);
+}

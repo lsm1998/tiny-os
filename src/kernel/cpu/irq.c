@@ -2,11 +2,16 @@
 #include "cpu/cpu.h"
 #include "comm/cpu_instr.h"
 #include "os_cfg.h"
+#include "tools/log.h"
 
 static gate_desc_t idt_table[IDT_TABLE_SIZE];
 
 static void do_handler_default(exception_frame_t* frame, const char* msg)
 {
+    // 输出异常信息
+    log_printf("----------");
+    log_printf("Exception: %s (IRQ %d)", msg, frame->irq_num);
+    log_printf("CS:%d \nDS:%d \nES:%d \nSS:%d \nGS:%d", frame->cs, frame->ds, frame->es, frame->ds, frame->gs);
     for (;;)
     {
         hlt();
