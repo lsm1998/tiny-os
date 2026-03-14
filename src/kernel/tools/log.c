@@ -1,5 +1,7 @@
+#include <stdarg.h>
 #include "tools/log.h"
 #include "comm/cpu_instr.h"
+#include "tools/klib.h"
 
 #define COM1_PORT 0x3F8
 
@@ -22,12 +24,22 @@ void log_init()
 
 void log_printf(const char* fmt, ...)
 {
-    while (*fmt != '\0')
+    char buffer[256];
+
+    kernel_memset(buffer, '\0', sizeof(buffer));
+
+    va_list args;
+    va_start(args, fmt);
+    kernel_vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+
+    char* ptr = buffer;
+
+    while (*ptr != '\0')
     {
         // 等待发送缓冲区空
-        while ((inb(COM1_PORT + 5) & 0x20) == 0)
-            ;
-        outb(COM1_PORT, *fmt++);
+        while ((inb(COM1_PORT + 5) & 0x20) == 0);
+        outb(COM1_PORT, *ptr++);
     }
 
     // 换行
