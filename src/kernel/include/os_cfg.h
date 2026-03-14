@@ -1,6 +1,9 @@
 #ifndef __OS_CFG_H__
 #define __OS_CFG_H__
 
+// 操作系统版本号
+#define OS_VERSION "0.1.0"
+
 // GDT表的大小
 #define GDT_TABLE_SIZE 256
 

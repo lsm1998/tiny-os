@@ -197,6 +197,7 @@ void irq_disable(int irq_num)
     }
     else
     {
+        irq_num -= 8;
         uint8_t mask = inb(PIC1_IMR) | (1 << (irq_num - 8));
         outb(PIC1_IMR, mask);
     }
@@ -217,6 +218,7 @@ void irq_enable(int irq_num)
     }
     else
     {
+        irq_num -= 8;
         uint8_t mask = inb(PIC1_IMR) & ~(1 << (irq_num - 8));
         outb(PIC1_IMR, mask);
     }
