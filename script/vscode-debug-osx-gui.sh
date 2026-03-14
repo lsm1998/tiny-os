@@ -169,7 +169,7 @@ prepare() {
         -gdb "tcp::${GDB_PORT}" \
         -S \
         -monitor none \
-        -serial none \
+        -serial vc \
         -drive file="$IMAGE_DIR/disk1.img",index=0,media=disk,format=raw \
         -drive file="$IMAGE_DIR/disk2.img",index=1,media=disk,format=raw \
         </dev/null >"$QEMU_LOG" 2>&1 &

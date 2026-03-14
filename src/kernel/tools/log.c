@@ -17,17 +17,11 @@ void log_init()
     // 开启 FIFO，清空 FIFO，14 字节阈值
     outb(COM1_PORT + 2, 0xC7);
     // IRQs enabled, RTS/DSR set
-    outb(COM1_PORT + 4, 0x0F);
+    outb(COM1_PORT + 4, 0x0B);
 }
 
 void log_printf(const char* fmt, ...)
 {
-    // char buffer[256];
-    //  va_list args;
-    //  va_start(args, fmt);
-    //  int len = vsnprintf(buffer, sizeof(buffer), fmt, args);
-    //  va_end(args);
-
     while (*fmt != '\0')
     {
         // 等待发送缓冲区空
