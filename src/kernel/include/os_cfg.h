@@ -13,4 +13,7 @@
 // 内核栈的大小
 #define KERNEL_STACK_SIZE (8 * 1024) // 8 KB
 
+// 时钟中断的频率，单位为毫秒
+#define OS_TICKS_MS 10
+
 #endif // __OS_CFG_H__
