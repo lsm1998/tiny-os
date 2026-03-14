@@ -22,6 +22,24 @@ typedef struct gate_desc_t
 } gate_desc_t;
 #pragma pack()
 
+typedef struct tss_t
+{
+    uint32_t pre_link; // 前一个TSS的链接
+    uint32_t esp0, ss0, esp1, ss1, esp2, ssp2;
+    uint32_t cr3;
+    uint32_t eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+    uint32_t es, cs, ss, ds, fs, gs; // 段寄存器
+    uint32_t ldt;                    // LDT选择子
+    uint16_t trap;                   // 任务门标志
+    uint16_t iomap;                  // I/O位图基地址
+} tss_t;
+
+// 默认的EFLAGS值，启用中断
+#define EFLAGS_DEFAULT (1 << 1)
+
+// 中断标志位
+#define EFLAGS_IF (1 << 9)
+
 // 中断门类型
 #define GATE_TYPE_INT (0xE << 8)
 
@@ -68,6 +86,6 @@ void cpu_init(void);
 
 void segment_desc_set(int selector, uint32_t base, uint32_t limit, uint16_t attr);
 
-void gate_desc_set(gate_desc_t *desc, uint32_t offset, uint16_t selector, uint16_t attr);
+void gate_desc_set(gate_desc_t* desc, uint32_t offset, uint16_t selector, uint16_t attr);
 
 #endif // __CPU_H__
