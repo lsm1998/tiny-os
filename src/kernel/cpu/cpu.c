@@ -55,3 +55,20 @@ void cpu_init(void)
     // 加载GDT表
     lgdt((uint32_t)gdt_table, sizeof(gdt_table));
 }
+
+int gdt_alloc_desc()
+{
+    for (int i = 1; i < GDT_TABLE_SIZE; i++)
+    {
+        if (gdt_table[i].attr == 0)
+        {
+            return i << 3; // 返回段选择子
+        }
+    }
+    return -1; // 没有可用的描述符
+}
+
+void switch_to_tss(int tss_selector)
+{
+    far_jump(tss_selector,  0);
+}

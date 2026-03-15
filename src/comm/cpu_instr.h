@@ -81,4 +81,9 @@ static inline void far_jump(uint16_t selector, uint32_t offset)
     __asm__ volatile("ljmpl *(%[a])" ::[a] "r"(addr));
 }
 
+static inline void write_tr(uint16_t selector)
+{
+    __asm__ volatile("ltr %w0" : : "r"(selector));
+}
+
 #endif // __CPU_INSTR_H

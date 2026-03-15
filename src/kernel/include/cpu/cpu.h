@@ -79,6 +79,9 @@ typedef struct tss_t
 // 数据段
 #define SEG_TYPE_DATA (0 << 3)
 
+// 可执行/可读
+#define SEG_TYPE_TSS (9 << 3)
+
 // 可读写
 #define SEG_TYPE_RW (1 << 1)
 
@@ -87,5 +90,9 @@ void cpu_init(void);
 void segment_desc_set(int selector, uint32_t base, uint32_t limit, uint16_t attr);
 
 void gate_desc_set(gate_desc_t* desc, uint32_t offset, uint16_t selector, uint16_t attr);
+
+int gdt_alloc_desc();
+
+void switch_to_tss(int tss_selector);
 
 #endif // __CPU_H__

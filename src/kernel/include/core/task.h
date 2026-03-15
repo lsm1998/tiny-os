@@ -6,9 +6,12 @@
 
 typedef struct task_t
 {
-    tss_t tss; // 任务状态段
+    tss_t tss;        // 任务状态段
+    int tss_selector; // TSS选择子
 } task_t;
 
-void task_init(task_t *task, uint32_t entry, uint32_t esp);
+void task_init(task_t* task, uint32_t entry, uint32_t esp);
+
+void task_switch(task_t* from, task_t* to);
 
 #endif // __TASK_H__
