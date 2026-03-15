@@ -79,8 +79,8 @@ typedef struct tss_t
 // 数据段
 #define SEG_TYPE_DATA (0 << 3)
 
-// 可执行/可读
-#define SEG_TYPE_TSS (9 << 3)
+// TSS段
+#define SEG_TYPE_TSS 0x9
 
 // 可读写
 #define SEG_TYPE_RW (1 << 1)
