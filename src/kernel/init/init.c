@@ -28,6 +28,7 @@ void init_task_entry(void)
     for (;;)
     {
         log_printf("task is running. Count: %d", count++);
+        task_switch(&init_task, &first_task);
     }
 }
 
@@ -46,5 +47,6 @@ void init_main(void)
     {
         // 内核主循环
         log_printf("Kernel is running. Count: %d", count++);
+        task_switch(&first_task, &init_task);
     }
 }
