@@ -16,10 +16,10 @@ void kernel_init(boot_info_t* boot_info)
     log_init();
     irq_init();
     time_init();
+    task_manager_init();
 }
 
 static task_t init_task;
-static task_t first_task;
 static uint32_t init_task_stack[1024];
 
 void init_task_entry(void)
@@ -28,7 +28,7 @@ void init_task_entry(void)
     for (;;)
     {
         log_printf("task is running. Count: %d", count++);
-        task_switch(&init_task, &first_task);
+        task_switch(&init_task, get_task_first());
     }
 }
 
@@ -38,15 +38,13 @@ void init_main(void)
     log_printf("%s Version: %s", OS_NAME, OS_VERSION);
 
     task_init(&init_task, (uint32_t)init_task_entry, (uint32_t)&init_task_stack[1023]);
-    task_init(&first_task, 0, 0);
-
-    write_tr(first_task.tss_selector);
+    task_first_init();
 
     int count = 0;
     for (;;)
     {
         // 内核主循环
         log_printf("Kernel is running. Count: %d", count++);
-        task_switch(&first_task, &init_task);
+        task_switch(get_task_first(), &init_task);
     }
 }

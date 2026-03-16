@@ -1,8 +1,11 @@
 #include "core/task.h"
+#include "comm/cpu_instr.h"
 #include "cpu/cpu.h"
 #include "tools/assert.h"
 #include "tools/klib.h"
 #include "os_cfg.h"
+
+static task_manager_t g_task_manager;
 
 static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
 {
@@ -48,4 +51,28 @@ void task_switch(task_t* from, task_t* to)
     // 切换TSS选择子
     switch_to_tss(to->tss_selector);
     // simple_switch(&from->stack, to->stack);
+}
+
+void task_manager_init(void)
+{
+    g_task_manager.current_task = NULL;
+    list_init(&g_task_manager.ready_list);
+    list_init(&g_task_manager.task_list);
+}
+
+void task_first_init(void)
+{
+    task_init(&g_task_manager.first_task, 0, 0);
+    write_tr(g_task_manager.first_task.tss_selector);
+    g_task_manager.current_task = &g_task_manager.first_task;
+}
+
+task_t* get_task_current(void)
+{
+    return g_task_manager.current_task;
+}
+
+task_t* get_task_first(void)
+{
+    return &g_task_manager.first_task;
 }
