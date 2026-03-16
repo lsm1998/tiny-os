@@ -6,6 +6,7 @@
 
 typedef struct task_t
 {
+    uint32_t* stack;  // 任务栈顶指针
     tss_t tss;        // 任务状态段
     int tss_selector; // TSS选择子
 } task_t;

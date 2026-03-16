@@ -23,8 +23,20 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
 void task_init(task_t* task, uint32_t entry, uint32_t esp)
 {
     assert(task != NULL);
-    tss_init(task, entry, esp);
+    // tss_init(task, entry, esp);
+    uint32_t* pesp = (uint32_t*)esp;
+    if(pesp != NULL)
+    {
+        *(--pesp) = entry;
+        *(--pesp) = 0;
+        *(--pesp) = 0;
+        *(--pesp) = 0;
+        *(--pesp) = 0;
+        task->stack = pesp;
+    }
 }
+
+void simple_switch(uint32_t** from, uint32_t* to);
 
 void task_switch(task_t* from, task_t* to)
 {
@@ -34,5 +46,6 @@ void task_switch(task_t* from, task_t* to)
         return;
     }
     // 切换TSS选择子
-    switch_to_tss(to->tss_selector);
+    // switch_to_tss(to->tss_selector);
+    simple_switch(&from->stack, to->stack);
 }
