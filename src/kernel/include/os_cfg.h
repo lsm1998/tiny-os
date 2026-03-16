@@ -22,4 +22,7 @@
 // 时钟中断的频率，单位为毫秒
 #define OS_TICKS_MS 10
 
+// 进程名称的最大长度
+#define TASK_NAME_MAX_LEN 32
+
 #endif // __OS_CFG_H__

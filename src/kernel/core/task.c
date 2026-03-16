@@ -4,6 +4,7 @@
 #include "tools/assert.h"
 #include "tools/klib.h"
 #include "os_cfg.h"
+#include "tools/list.h"
 
 static task_manager_t g_task_manager;
 
@@ -23,20 +24,18 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
     task->tss_selector = tss_selector;
 }
 
-void task_init(task_t* task, uint32_t entry, uint32_t esp)
+void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp)
 {
     assert(task != NULL);
+    assert(name != NULL);
     tss_init(task, entry, esp);
-    // uint32_t* pesp = (uint32_t*)esp;
-    // if(pesp != NULL)
-    // {
-    //     *(--pesp) = entry;
-    //     *(--pesp) = 0;
-    //     *(--pesp) = 0;
-    //     *(--pesp) = 0;
-    //     *(--pesp) = 0;
-    //     task->stack = pesp;
-    // }
+    list_node_init(&task->run_node);
+    list_node_init(&task->all_node);
+    kernel_strncpy(task->name, name, TASK_NAME_MAX_LEN - 1);
+    task->name[TASK_NAME_MAX_LEN - 1] = '\0';
+    list_insert_tail(&g_task_manager.task_list, &task->all_node);
+    task->state = TASK_CREATED;
+    task_set_ready(task);
 }
 
 void simple_switch(uint32_t** from, uint32_t* to);
@@ -62,7 +61,7 @@ void task_manager_init(void)
 
 void task_first_init(void)
 {
-    task_init(&g_task_manager.first_task, 0, 0);
+    task_init(&g_task_manager.first_task, "First Task", 0, 0);
     write_tr(g_task_manager.first_task.tss_selector);
     g_task_manager.current_task = &g_task_manager.first_task;
 }
@@ -75,4 +74,21 @@ task_t* get_task_current(void)
 task_t* get_task_first(void)
 {
     return &g_task_manager.first_task;
+}
+
+void task_set_ready(task_t* task)
+{
+    assert(task != NULL);
+    if (task->state == TASK_READY)
+    {
+        return;
+    }
+    task->state = TASK_READY;
+    list_insert_tail(&g_task_manager.ready_list, &task->run_node);
+}
+
+void task_set_block(task_t* task)
+{
+    assert(task != NULL);
+    list_remove(&g_task_manager.ready_list, &task->run_node);
 }

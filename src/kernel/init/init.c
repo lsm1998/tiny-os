@@ -37,7 +37,7 @@ void init_main(void)
     log_printf("Kernel initialized.");
     log_printf("%s Version: %s", OS_NAME, OS_VERSION);
 
-    task_init(&init_task, (uint32_t)init_task_entry, (uint32_t)&init_task_stack[1023]);
+    task_init(&init_task, "Init Task", (uint32_t)init_task_entry, (uint32_t)&init_task_stack[1023]);
     task_first_init();
 
     int count = 0;
