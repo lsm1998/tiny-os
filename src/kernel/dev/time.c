@@ -3,14 +3,16 @@
 #include "comm/types.h"
 #include "os_cfg.h"
 #include "cpu/irq.h"
+#include "core/task.h"
 
 static uint32_t sys_tick = 0;
 
 void do_handler_time(exception_frame_t* frame)
 {
     sys_tick++;
-
     pic_send_eoi(IRQ0_TIMER);
+    // 进程调度
+    task_time_tick();
 }
 
 static void init_pit(void)

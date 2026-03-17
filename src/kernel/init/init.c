@@ -1,11 +1,11 @@
 #include "init.h"
 #include "comm/cpu_instr.h"
+#include "tools/assert.h"
 #include "os_cfg.h"
 #include "comm/boot_info.h"
 #include "cpu/cpu.h"
 #include "cpu/irq.h"
 #include "dev/time.h"
-#include "tools/assert.h"
 #include "tools/log.h"
 #include "core/task.h"
 
@@ -28,7 +28,6 @@ void init_task_entry(void)
     for (;;)
     {
         log_printf("task is running. Count: %d", count++);
-        task_switch(&init_task, get_task_first());
     }
 }
 
@@ -40,11 +39,12 @@ void init_main(void)
     task_init(&init_task, "Init Task", (uint32_t)init_task_entry, (uint32_t)&init_task_stack[1023]);
     task_first_init();
 
+    irq_enable_global();
+
     int count = 0;
     for (;;)
     {
         // 内核主循环
         log_printf("Kernel is running. Count: %d", count++);
-        task_switch(get_task_first(), &init_task);
     }
 }

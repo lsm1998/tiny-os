@@ -22,6 +22,8 @@ typedef struct task_t
     int tss_selector;             // TSS选择子
     task_state_t state;           // 进程状态
     char name[TASK_NAME_MAX_LEN]; // 进程名称
+    int slice_ticks;              // 时间片剩余ticks数
+    int time_ticks;               // 进程已运行ticks数
 } task_t;
 
 typedef struct task_manager_t
@@ -47,5 +49,13 @@ task_t* get_task_first(void);
 void task_set_ready(task_t* task);
 
 void task_set_block(task_t* task);
+
+void sys_sched_yield(void);
+
+task_t* task_next_run(void);
+
+void task_dispatch(void);
+
+void task_time_tick(void);
 
 #endif // __TASK_H__

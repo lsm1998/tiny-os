@@ -35,6 +35,8 @@ void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp)
     task->name[TASK_NAME_MAX_LEN - 1] = '\0';
     list_insert_tail(&g_task_manager.task_list, &task->all_node);
     task->state = TASK_CREATED;
+    task->time_ticks = TASK_TIME_TICKS_DEFAULT;
+    task->slice_ticks = task->time_ticks;
     task_set_ready(task);
 }
 
@@ -91,4 +93,54 @@ void task_set_block(task_t* task)
 {
     assert(task != NULL);
     list_remove(&g_task_manager.ready_list, &task->run_node);
+}
+
+task_t* task_next_run(void)
+{
+    list_node_t* task_nodex = list_first(&g_task_manager.ready_list);
+    if (task_nodex == NULL)
+    {
+        return NULL;
+    }
+    return list_node_parent(task_nodex, task_t, run_node);
+}
+
+void task_dispatch(void)
+{
+    task_t* to = task_next_run();
+    if (to == NULL || to == g_task_manager.current_task)
+    {
+        return;
+    }
+    task_t* from = g_task_manager.current_task;
+    g_task_manager.current_task = to;
+    to->state = TASK_RUNNING;
+    task_switch(from, to);
+}
+
+void sys_sched_yield(void)
+{
+    // 如果就绪队列为空，则不进行调度
+    if (list_is_empty(&g_task_manager.ready_list))
+    {
+        return;
+    }
+    task_t* current = g_task_manager.current_task;
+    task_set_block(current);
+    task_set_ready(current);
+    task_dispatch();
+}
+
+void task_time_tick(void)
+{
+    task_t* current = g_task_manager.current_task;
+    if (current == NULL)
+    {
+        return;
+    }
+    if (--current->slice_ticks <= 0)
+    {
+        current->slice_ticks = current->time_ticks;
+        sys_sched_yield();
+    }
 }

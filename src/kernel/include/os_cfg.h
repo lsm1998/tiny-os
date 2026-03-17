@@ -25,4 +25,7 @@
 // 进程名称的最大长度
 #define TASK_NAME_MAX_LEN 32
 
+// 进程默认的时间片ticks数
+#define TASK_TIME_TICKS_DEFAULT 10
+
 #endif // __OS_CFG_H__
