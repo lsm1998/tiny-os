@@ -93,6 +93,7 @@ void task_set_block(task_t* task)
 {
     assert(task != NULL);
     list_remove(&g_task_manager.ready_list, &task->run_node);
+    task->state = TASK_WAITING;
 }
 
 task_t* task_next_run(void)
