@@ -2,9 +2,11 @@
 #include "tools/log.h"
 #include "comm/cpu_instr.h"
 #include "tools/klib.h"
-#include "cpu/irq.h"
+#include "ipc/mutex.h"
 
 #define COM1_PORT 0x3F8
+
+static mutex_t log_mutex;
 
 void log_init()
 {
@@ -21,6 +23,8 @@ void log_init()
     outb(COM1_PORT + 2, 0xC7);
     // IRQs enabled, RTS/DSR set
     outb(COM1_PORT + 4, 0x0B);
+    // 初始化互斥锁
+    mutex_init(&log_mutex);
 }
 
 void log_printf(const char* fmt, ...)
@@ -36,7 +40,7 @@ void log_printf(const char* fmt, ...)
 
     char* ptr = buffer;
 
-    irq_state_t state = irq_enter_protection();
+    mutex_lock(&log_mutex);
     while (*ptr != '\0')
     {
         // 等待发送缓冲区空
@@ -48,7 +52,7 @@ void log_printf(const char* fmt, ...)
     outb(COM1_PORT, '\r');
     outb(COM1_PORT, '\n');
 
-    irq_exit_protection(state);
+    mutex_unlock(&log_mutex);
 }
 
 void panic(const char* file, int line, const char* function, const char* message)
