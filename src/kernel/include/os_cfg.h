@@ -28,4 +28,7 @@
 // 进程默认的时间片ticks数
 #define TASK_TIME_TICKS_DEFAULT 10
 
+// 空闲任务栈大小
+#define IDLE_STACK_SIZE 1024
+
 #endif // __OS_CFG_H__

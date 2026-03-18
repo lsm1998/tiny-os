@@ -8,6 +8,7 @@
 #include "cpu/irq.h"
 
 static task_manager_t g_task_manager;
+static uint32_t g_idle_task_stack[IDLE_STACK_SIZE];
 
 static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
 {
@@ -47,6 +48,14 @@ void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp)
 
 void simple_switch(uint32_t** from, uint32_t* to);
 
+static void idle_task_entry(void)
+{
+    for (;;)
+    {
+        hlt();
+    }
+}
+
 void task_switch(task_t* from, task_t* to)
 {
     assert(from != NULL && to != NULL);
@@ -65,6 +74,11 @@ void task_manager_init(void)
     list_init(&g_task_manager.ready_list);
     list_init(&g_task_manager.task_list);
     list_init(&g_task_manager.sleep_list);
+
+    task_init(&g_task_manager.idle_task,
+              "Idle Task",
+              (uint32_t)idle_task_entry,
+              (uint32_t)(g_idle_task_stack + IDLE_STACK_SIZE));
 }
 
 void task_first_init(void)
@@ -87,6 +101,10 @@ task_t* get_task_first(void)
 void task_set_ready(task_t* task)
 {
     assert(task != NULL);
+    if (task == &g_task_manager.idle_task)
+    {
+        return;
+    }
     if (task->state == TASK_READY)
     {
         return;
@@ -97,6 +115,10 @@ void task_set_ready(task_t* task)
 
 void task_set_block(task_t* task)
 {
+    if (task == NULL || task == &g_task_manager.idle_task)
+    {
+        return;
+    }
     list_remove(&g_task_manager.ready_list, &task->run_node);
     // task->state = TASK_WAITING;
 }
@@ -106,7 +128,7 @@ task_t* task_next_run(void)
     list_node_t* task_nodex = list_first(&g_task_manager.ready_list);
     if (task_nodex == NULL)
     {
-        return NULL;
+        return &g_task_manager.idle_task;
     }
     return list_node_parent(task_nodex, task_t, run_node);
 }
@@ -128,8 +150,7 @@ void task_dispatch(void)
 void sys_sched_yield(void)
 {
     irq_state_t state = irq_enter_protection();
-    // 如果就绪队列为空，则不进行调度
-    if (!list_is_empty(&g_task_manager.ready_list))
+    if (list_size(&g_task_manager.ready_list) > 1)
     {
         task_t* current = g_task_manager.current_task;
         task_set_block(current);
@@ -179,10 +200,6 @@ void task_set_sleep(task_t* task, uint32_t ticks)
     task->sleep_ticks = ticks;
     task->state = TASK_SLEEP;
     list_insert_tail(&g_task_manager.sleep_list, &task->run_node);
-    if (task == g_task_manager.current_task)
-    {
-        sys_sched_yield();
-    }
 }
 
 void task_set_wakeup(task_t* task)
@@ -196,6 +213,11 @@ void task_set_wakeup(task_t* task)
 
 void sys_sleep(uint32_t ms)
 {
+    if (ms < OS_TICKS_MS)
+    {
+        ms = OS_TICKS_MS;
+    }
+
     irq_state_t state = irq_enter_protection();
     task_t* current = g_task_manager.current_task;
     if (current != NULL)

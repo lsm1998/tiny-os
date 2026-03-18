@@ -27,8 +27,8 @@ void init_task_entry(void)
     int count = 0;
     for (;;)
     {
-        // log_printf("task is running. Count: %d", count++);
-        // sys_sleep(200);
+        log_printf("task is running. Count: %d", count++);
+        sys_sleep(2000);
     }
 }
 
@@ -37,7 +37,7 @@ void init_main(void)
     log_printf("Kernel initialized.");
     log_printf("%s Version: %s", OS_NAME, OS_VERSION);
 
-    task_init(&init_task, "Init Task", (uint32_t)init_task_entry, (uint32_t)&init_task_stack[1023]);
+    task_init(&init_task, "Init Task", (uint32_t)init_task_entry, (uint32_t)(init_task_stack + 1024));
     task_first_init();
 
     irq_enable_global();

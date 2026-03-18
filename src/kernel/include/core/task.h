@@ -34,6 +34,7 @@ typedef struct task_manager_t
     list_t task_list;     // 所有进程列表
     list_t sleep_list;    // 睡眠队列
     task_t first_task;    // 第一个进程（内核进程）
+    task_t idle_task;     // 空闲进程
 } task_manager_t;
 
 void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp);
