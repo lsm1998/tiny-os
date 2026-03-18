@@ -24,6 +24,7 @@ typedef struct task_t
     char name[TASK_NAME_MAX_LEN]; // 进程名称
     int slice_ticks;              // 时间片剩余ticks数
     int time_ticks;               // 进程已运行ticks数
+    int sleep_ticks;              // 进程睡眠ticks数
 } task_t;
 
 typedef struct task_manager_t
@@ -31,6 +32,7 @@ typedef struct task_manager_t
     task_t* current_task; // 当前进程
     list_t ready_list;    // 就绪队列
     list_t task_list;     // 所有进程列表
+    list_t sleep_list;    // 睡眠队列
     task_t first_task;    // 第一个进程（内核进程）
 } task_manager_t;
 
@@ -52,10 +54,16 @@ void task_set_block(task_t* task);
 
 void sys_sched_yield(void);
 
+void sys_sleep(uint32_t ms);
+
 task_t* task_next_run(void);
 
 void task_dispatch(void);
 
 void task_time_tick(void);
+
+void task_set_sleep(task_t* task, uint32_t ticks);
+
+void task_set_wakeup(task_t* task);
 
 #endif // __TASK_H__

@@ -37,6 +37,7 @@ void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp)
     task->state = TASK_CREATED;
     task->time_ticks = TASK_TIME_TICKS_DEFAULT;
     task->slice_ticks = task->time_ticks;
+    task->sleep_ticks = 0;
 
     irq_state_t state = irq_enter_protection();
     task_set_ready(task);
@@ -63,6 +64,7 @@ void task_manager_init(void)
     g_task_manager.current_task = NULL;
     list_init(&g_task_manager.ready_list);
     list_init(&g_task_manager.task_list);
+    list_init(&g_task_manager.sleep_list);
 }
 
 void task_first_init(void)
@@ -95,9 +97,8 @@ void task_set_ready(task_t* task)
 
 void task_set_block(task_t* task)
 {
-    assert(task != NULL);
     list_remove(&g_task_manager.ready_list, &task->run_node);
-    task->state = TASK_WAITING;
+    // task->state = TASK_WAITING;
 }
 
 task_t* task_next_run(void)
@@ -148,6 +149,61 @@ void task_time_tick(void)
     if (--current->slice_ticks <= 0)
     {
         current->slice_ticks = current->time_ticks;
+        task_set_block(current);
+        task_set_ready(current);
+        task_dispatch();
+    }
+
+    list_node_t *node = list_first(&g_task_manager.sleep_list); 
+    while (node != NULL)
+    {
+        // 先保存下一个节点，防止当前节点被唤醒后从睡眠队列中移除导致访问错误
+        list_node_t* next = node->next; 
+        task_t* task = list_node_parent(node, task_t, run_node);
+        if (--task->sleep_ticks <= 0)
+        {
+            task_set_wakeup(task);
+            task_set_ready(task);
+        }
+        node = next;
+    }
+    task_dispatch();
+}
+
+void task_set_sleep(task_t* task, uint32_t ticks)
+{
+    if (task == NULL || ticks == 0)
+    {
+        return;
+    }
+    task->sleep_ticks = ticks;
+    task->state = TASK_SLEEP;
+    list_insert_tail(&g_task_manager.sleep_list, &task->run_node);
+    if (task == g_task_manager.current_task)
+    {
         sys_sched_yield();
     }
+}
+
+void task_set_wakeup(task_t* task)
+{
+    if (task == NULL)
+    {
+        return;
+    }
+    list_remove(&g_task_manager.sleep_list, &task->run_node);
+}
+
+void sys_sleep(uint32_t ms)
+{
+    irq_state_t state = irq_enter_protection();
+    task_t* current = g_task_manager.current_task;
+    if (current != NULL)
+    {
+        task_set_block(current);
+        // 将毫秒转换为ticks数 向上取整
+        task_set_sleep(current, (ms + OS_TICKS_MS - 1) / OS_TICKS_MS);
+        task_dispatch();
+    }
+    irq_exit_protection(state);
 }

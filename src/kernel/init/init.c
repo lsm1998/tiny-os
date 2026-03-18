@@ -27,7 +27,8 @@ void init_task_entry(void)
     int count = 0;
     for (;;)
     {
-        log_printf("task is running. Count: %d", count++);
+        // log_printf("task is running. Count: %d", count++);
+        // sys_sleep(200);
     }
 }
 
@@ -46,5 +47,6 @@ void init_main(void)
     {
         // 内核主循环
         log_printf("Kernel is running. Count: %d", count++);
+        sys_sleep(1000);
     }
 }
