@@ -50,6 +50,8 @@
 
 #define PIC_OCW2_EOI (1 << 5)
 
+typedef uint32_t irq_state_t;
+
 typedef struct exception_frame_t
 {
     uint32_t gs, fs, es, ds;
@@ -95,5 +97,9 @@ void irq_disable_global(void);
 void irq_enable_global(void);
 
 void pic_send_eoi(int irq_num);
+
+irq_state_t irq_enter_protection(void);
+
+void irq_exit_protection(irq_state_t state);
 
 #endif // __IRQ_H__

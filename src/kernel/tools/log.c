@@ -2,6 +2,7 @@
 #include "tools/log.h"
 #include "comm/cpu_instr.h"
 #include "tools/klib.h"
+#include "cpu/irq.h"
 
 #define COM1_PORT 0x3F8
 
@@ -35,6 +36,7 @@ void log_printf(const char* fmt, ...)
 
     char* ptr = buffer;
 
+    irq_state_t state = irq_enter_protection();
     while (*ptr != '\0')
     {
         // 等待发送缓冲区空
@@ -45,6 +47,8 @@ void log_printf(const char* fmt, ...)
     // 换行
     outb(COM1_PORT, '\r');
     outb(COM1_PORT, '\n');
+
+    irq_exit_protection(state);
 }
 
 void panic(const char* file, int line, const char* function, const char* message)

@@ -86,4 +86,16 @@ static inline void write_tr(uint16_t selector)
     __asm__ volatile("ltr %w0" : : "r"(selector));
 }
 
+static inline uint32_t read_eflags(void)
+{
+    uint32_t eflags;
+    __asm__ volatile("pushf; pop %0" : "=r"(eflags));
+    return eflags;
+}
+
+static inline void write_eflags(uint32_t eflags)
+{
+    __asm__ volatile("push %0; popf" : : "r"(eflags));
+}
+
 #endif // __CPU_INSTR_H
