@@ -7,7 +7,10 @@
 #include "tools/list.h"
 #include "cpu/irq.h"
 
+// 任务管理器
 static task_manager_t g_task_manager;
+
+// 空闲任务栈
 static uint32_t g_idle_task_stack[IDLE_STACK_SIZE];
 
 static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
@@ -33,6 +36,7 @@ void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp)
     tss_init(task, entry, esp);
     list_node_init(&task->run_node);
     list_node_init(&task->all_node);
+    list_node_init(&task->wait_node);
     kernel_strncpy(task->name, name, TASK_NAME_MAX_LEN - 1);
     task->name[TASK_NAME_MAX_LEN - 1] = '\0';
     task->state = TASK_CREATED;
@@ -75,6 +79,7 @@ void task_manager_init(void)
     list_init(&g_task_manager.task_list);
     list_init(&g_task_manager.sleep_list);
 
+    // 初始化空闲任务
     task_init(&g_task_manager.idle_task,
               "Idle Task",
               (uint32_t)idle_task_entry,
@@ -175,11 +180,11 @@ void task_time_tick(void)
         task_dispatch();
     }
 
-    list_node_t *node = list_first(&g_task_manager.sleep_list); 
+    list_node_t* node = list_first(&g_task_manager.sleep_list);
     while (node != NULL)
     {
         // 先保存下一个节点，防止当前节点被唤醒后从睡眠队列中移除导致访问错误
-        list_node_t* next = node->next; 
+        list_node_t* next = node->next;
         task_t* task = list_node_parent(node, task_t, run_node);
         if (--task->sleep_ticks <= 0)
         {

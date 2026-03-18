@@ -109,10 +109,10 @@ void list_insert_tail(list_t* list, list_node_t* new_node)
     list->size++;
 }
 
-void list_remove(list_t* list, list_node_t* node)
+list_node_t* list_remove(list_t* list, list_node_t* node)
 {
     if (!list || !node)
-        return;
+        return NULL;
     if (node->prev)
         node->prev->next = node->next;
     else
@@ -122,6 +122,7 @@ void list_remove(list_t* list, list_node_t* node)
     else
         list->tail = node->prev;
     list->size--;
+    return node;
 }
 
 void list_clear(list_t* list)
@@ -130,14 +131,16 @@ void list_clear(list_t* list)
         list_remove_first(list);
 }
 
-void list_remove_first(list_t* list)
+list_node_t* list_remove_first(list_t* list)
 {
     if (list && list->head)
-        list_remove(list, list->head);
+        return list_remove(list, list->head);
+    return NULL;
 }
 
-void list_remove_last(list_t* list)
+list_node_t* list_remove_last(list_t* list)
 {
     if (list && list->tail)
-        list_remove(list, list->tail);
+        return list_remove(list, list->tail);
+    return NULL;
 }

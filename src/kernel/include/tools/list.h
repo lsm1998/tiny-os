@@ -49,12 +49,12 @@ void list_insert_head(list_t* list, list_node_t* new_node);
 
 void list_insert_tail(list_t* list, list_node_t* new_node);
 
-void list_remove(list_t* list, list_node_t* node);
+list_node_t* list_remove(list_t* list, list_node_t* node);
 
 void list_clear(list_t* list);
 
-void list_remove_first(list_t* list);
+list_node_t* list_remove_first(list_t* list);
 
-void list_remove_last(list_t* list);
+list_node_t* list_remove_last(list_t* list);
 
 #endif // __LIST_H__

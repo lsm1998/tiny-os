@@ -8,6 +8,9 @@
 #include "dev/time.h"
 #include "tools/log.h"
 #include "core/task.h"
+#include "ipc/mutex.h"
+
+static mutex_t mutex;
 
 void kernel_init(boot_info_t* boot_info)
 {
@@ -21,14 +24,21 @@ void kernel_init(boot_info_t* boot_info)
 
 static task_t init_task;
 static uint32_t init_task_stack[1024];
+static uint32_t count;
 
 void init_task_entry(void)
 {
-    int count = 0;
     for (;;)
     {
-        log_printf("task is running. Count: %d", count++);
-        sys_sleep(2000);
+        sys_sleep(200);
+        mutex_lock(&mutex);
+        if(count <= 0)
+        {
+            mutex_unlock(&mutex);
+            continue;
+        }
+        log_printf("task is running. Count: %d", count--);
+        mutex_unlock(&mutex);
     }
 }
 
@@ -40,13 +50,17 @@ void init_main(void)
     task_init(&init_task, "Init Task", (uint32_t)init_task_entry, (uint32_t)(init_task_stack + 1024));
     task_first_init();
 
+    mutex_init(&mutex);
+
     irq_enable_global();
 
-    int count = 0;
     for (;;)
     {
         // 内核主循环
         log_printf("Kernel is running. Count: %d", count++);
         sys_sleep(1000);
+        mutex_lock(&mutex);
+        count++;
+        mutex_unlock(&mutex);
     }
 }

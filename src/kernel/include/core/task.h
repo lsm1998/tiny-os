@@ -18,6 +18,7 @@ typedef struct task_t
 {
     list_node_t run_node;         // 运行队列节点
     list_node_t all_node;         // 所有进程列表节点
+    list_node_t wait_node;        // 等待队列节点
     tss_t tss;                    // 进程状态段
     int tss_selector;             // TSS选择子
     task_state_t state;           // 进程状态

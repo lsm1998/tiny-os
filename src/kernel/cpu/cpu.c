@@ -1,10 +1,13 @@
 #include "cpu/cpu.h"
 #include "comm/cpu_instr.h"
-#include "cpu/irq.h"
 #include "os_cfg.h"
+#include "ipc/mutex.h"
 
 // 全局描述符表
 static segment_desc_t gdt_table[GDT_TABLE_SIZE];
+
+// 互斥锁
+static mutex_t gdt_mutex;
 
 void segment_desc_set(int selector, uint32_t base, uint32_t limit, uint16_t attr)
 {
@@ -39,12 +42,6 @@ void init_gdt(void)
         // 将所有段描述符初始化为无效
         segment_desc_set(i << 3, 0, 0, 0);
     }
-}
-
-void cpu_init(void)
-{
-    // 初始化GDT表
-    init_gdt();
 
     // 代码段
     segment_desc_set(KERNEL_SELECTOR_CS, 0, 0xFFFFF,
@@ -57,9 +54,18 @@ void cpu_init(void)
     lgdt((uint32_t)gdt_table, sizeof(gdt_table));
 }
 
+void cpu_init(void)
+{
+    // 初始化GDT表
+    init_gdt();
+
+    // 初始化mutex
+    mutex_init(&gdt_mutex);
+}
+
 int gdt_alloc_desc()
 {
-    irq_state_t state = irq_enter_protection();
+    mutex_lock(&gdt_mutex);
     int index = -1;
     for (int i = 1; i < GDT_TABLE_SIZE; i++)
     {
@@ -69,7 +75,7 @@ int gdt_alloc_desc()
             break;
         }
     }
-    irq_exit_protection(state);
+    mutex_unlock(&gdt_mutex);
     return index; // 返回-1表示没有可用的描述符槽位
 }
 
