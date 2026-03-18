@@ -1,5 +1,6 @@
 #include "cpu/cpu.h"
 #include "comm/cpu_instr.h"
+#include "cpu/irq.h"
 #include "os_cfg.h"
 
 // 全局描述符表
@@ -58,17 +59,21 @@ void cpu_init(void)
 
 int gdt_alloc_desc()
 {
+    irq_state_t state = irq_enter_protection();
+    int index = -1;
     for (int i = 1; i < GDT_TABLE_SIZE; i++)
     {
         if (gdt_table[i].attr == 0)
         {
-            return i << 3; // 返回段选择子
+            index = i << 3; // 返回段选择子
+            break;
         }
     }
-    return -1; // 没有可用的描述符
+    irq_exit_protection(state);
+    return index; // 返回-1表示没有可用的描述符槽位
 }
 
 void switch_to_tss(int tss_selector)
 {
-    far_jump(tss_selector,  0);
+    far_jump(tss_selector, 0);
 }

@@ -5,6 +5,7 @@
 #include "tools/klib.h"
 #include "os_cfg.h"
 #include "tools/list.h"
+#include "cpu/irq.h"
 
 static task_manager_t g_task_manager;
 
@@ -33,11 +34,14 @@ void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp)
     list_node_init(&task->all_node);
     kernel_strncpy(task->name, name, TASK_NAME_MAX_LEN - 1);
     task->name[TASK_NAME_MAX_LEN - 1] = '\0';
-    list_insert_tail(&g_task_manager.task_list, &task->all_node);
     task->state = TASK_CREATED;
     task->time_ticks = TASK_TIME_TICKS_DEFAULT;
     task->slice_ticks = task->time_ticks;
+
+    irq_state_t state = irq_enter_protection();
     task_set_ready(task);
+    list_insert_tail(&g_task_manager.task_list, &task->all_node);
+    irq_exit_protection(state);
 }
 
 void simple_switch(uint32_t** from, uint32_t* to);
@@ -108,28 +112,30 @@ task_t* task_next_run(void)
 
 void task_dispatch(void)
 {
+    irq_state_t state = irq_enter_protection();
     task_t* to = task_next_run();
-    if (to == NULL || to == g_task_manager.current_task)
+    if (to != NULL && to != g_task_manager.current_task)
     {
-        return;
+        task_t* from = g_task_manager.current_task;
+        g_task_manager.current_task = to;
+        to->state = TASK_RUNNING;
+        task_switch(from, to);
     }
-    task_t* from = g_task_manager.current_task;
-    g_task_manager.current_task = to;
-    to->state = TASK_RUNNING;
-    task_switch(from, to);
+    irq_exit_protection(state);
 }
 
 void sys_sched_yield(void)
 {
+    irq_state_t state = irq_enter_protection();
     // 如果就绪队列为空，则不进行调度
-    if (list_is_empty(&g_task_manager.ready_list))
+    if (!list_is_empty(&g_task_manager.ready_list))
     {
-        return;
+        task_t* current = g_task_manager.current_task;
+        task_set_block(current);
+        task_set_ready(current);
+        task_dispatch();
     }
-    task_t* current = g_task_manager.current_task;
-    task_set_block(current);
-    task_set_ready(current);
-    task_dispatch();
+    irq_exit_protection(state);
 }
 
 void task_time_tick(void)
