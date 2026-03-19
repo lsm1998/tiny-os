@@ -9,6 +9,7 @@
 #include "tools/log.h"
 #include "core/task.h"
 #include "ipc/mutex.h"
+#include "core/memory.h"
 
 static mutex_t mutex;
 
@@ -16,6 +17,7 @@ void kernel_init(boot_info_t* boot_info)
 {
     assert(boot_info->ram_region_count > 0);
     cpu_init();
+    memory_init(boot_info);
     log_init();
     irq_init();
     time_init();
