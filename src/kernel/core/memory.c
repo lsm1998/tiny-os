@@ -72,7 +72,7 @@ void memory_init(boot_info_t* boot_info)
 
     addr_allocator_init(&paddr_allocator, mem_free, MEM_EXT_START, total_size, MEM_PAGE_SIZE);
 
-    mem_free+= bitmap_byte_count(paddr_allocator.size / MEM_PAGE_SIZE);
-
-    assert(mem_free < (uint8_t*) MEM_EBDA_START);
+    mem_free += bitmap_byte_count(paddr_allocator.size / MEM_PAGE_SIZE);
+    
+    assert(mem_free < (uint8_t*)MEM_EBDA_START);
 }
