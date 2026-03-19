@@ -38,21 +38,16 @@ static void addr_free_page(addr_allocator_t* allocator, uint32_t addr, uint32_t 
     mutex_unlock(&allocator->mutex);
 }
 
+static void show_memory_info(boot_info_t* boot_info)
+{
+    log_printf("Memory Information:");
+    for (uint32_t i = 0; i < boot_info->ram_region_count; i++)
+    {
+        log_printf("  Region %d: Start: 0x%x, Size: %d bytes", i, boot_info->ram_region_cfg[i].start, boot_info->ram_region_cfg[i].size);
+    }
+}
+
 void memory_init(boot_info_t* boot_info)
 {
-    addr_allocator_t allocator;
-    uint8_t bits[8];
-    addr_allocator_init(&allocator, bits, 0x1000, 64 * 4096, 4096);
-    for (int i = 0; i < 32; i++)
-    {
-        uint32_t addr = addr_allocator_page(&allocator, 2); 
-        log_printf("Allocated page at address: 0x%X", addr);
-    }
-
-    for (int i = 0; i < 32; i++)
-    {
-        uint32_t addr = 0x1000 + i * 2 * 4096; // 假设之前分配的地址
-        addr_free_page(&allocator, addr, 2);
-        log_printf("Freed page at address: 0x%X", addr);
-    }
+    show_memory_info(boot_info);
 }

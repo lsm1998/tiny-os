@@ -1,5 +1,48 @@
 #include "tools/klib.h"
 
+static void append_char(char* buffer, size_t size, size_t* pos, char ch)
+{
+    if (buffer == NULL || pos == NULL || size == 0)
+    {
+        return;
+    }
+
+    if (*pos < size - 1)
+    {
+        buffer[(*pos)++] = ch;
+    }
+}
+
+static void append_str(char* buffer, size_t size, size_t* pos, const char* str)
+{
+    if (str == NULL)
+    {
+        str = "(null)";
+    }
+
+    while (*str != '\0')
+    {
+        append_char(buffer, size, pos, *str++);
+    }
+}
+
+static void append_uint(char* buffer, size_t size, size_t* pos, unsigned int value, unsigned int base, const char* digits)
+{
+    char temp[16];
+    int i = 0;
+
+    do
+    {
+        temp[i++] = digits[value % base];
+        value /= base;
+    } while (value > 0);
+
+    while (--i >= 0)
+    {
+        append_char(buffer, size, pos, temp[i]);
+    }
+}
+
 void kernel_strcpy(char* dest, const char* src)
 {
     if (dest == NULL || src == NULL)
@@ -202,28 +245,45 @@ void kernel_vsnprintf(char* buffer, size_t size, const char* fmt, va_list args)
         if (fmt[i] == '%')
         {
             i++;
+            if (fmt[i] == '\0')
+            {
+                break;
+            }
+
             if (fmt[i] == 'd')
             {
                 int value = va_arg(args, int);
                 char num_buffer[12];
                 kernel_itoa(value, num_buffer, 10);
-                kernel_strncpy(buffer + pos, num_buffer, size - pos);
-                pos += kernel_strlen(num_buffer);
+                append_str(buffer, size, &pos, num_buffer);
             }
             else if (fmt[i] == 's')
             {
                 const char* str = va_arg(args, const char*);
-                kernel_strncpy(buffer + pos, str, size - pos);
-                pos += kernel_strlen(str);
+                append_str(buffer, size, &pos, str);
+            }
+            else if (fmt[i] == 'x')
+            {
+                unsigned int value = va_arg(args, unsigned int);
+                append_uint(buffer, size, &pos, value, 16, "0123456789abcdef");
+            }
+            else if (fmt[i] == 'X')
+            {
+                unsigned int value = va_arg(args, unsigned int);
+                append_uint(buffer, size, &pos, value, 16, "0123456789ABCDEF");
+            }
+            else if (fmt[i] == '%')
+            {
+                append_char(buffer, size, &pos, '%');
             }
             else
             {
-                buffer[pos++] = fmt[i];
+                append_char(buffer, size, &pos, fmt[i]);
             }
         }
         else
         {
-            buffer[pos++] = fmt[i];
+            append_char(buffer, size, &pos, fmt[i]);
         }
     }
 
