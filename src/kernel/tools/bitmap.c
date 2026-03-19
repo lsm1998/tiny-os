@@ -31,12 +31,22 @@ int bitmap_get_bit(bitmap_t* bitmap, int index)
 
 void bitmap_set_bit(bitmap_t* bitmap, int index, uint8_t value)
 {
-    bitmap_set_bit_range(bitmap, index, 1, value);
+    if (bitmap == NULL || index < 0 || index >= bitmap->bit_count)
+        return; // 越界或无效参数
+
+    int byte_index = index / 8;
+    int bit_offset = index % 8;
+    uint8_t mask = (uint8_t)(1u << bit_offset);
+
+    if (value)
+        bitmap->bits[byte_index] |= mask;
+    else
+        bitmap->bits[byte_index] &= (uint8_t)~mask;
 }
 
 void bitmap_set_bit_range(bitmap_t* bitmap, int start_index, int count, uint8_t value)
 {
-    if (start_index < 0 || start_index >= bitmap->bit_count || count <= 0)
+    if (bitmap == NULL || start_index < 0 || start_index >= bitmap->bit_count || count <= 0)
         return; // 越界或无效参数
 
     int end_index = start_index + count;
