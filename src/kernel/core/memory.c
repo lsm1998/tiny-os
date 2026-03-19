@@ -1,9 +1,11 @@
 #include "core/memory.h"
 #include "ipc/mutex.h"
 #include "tools/bitmap.h"
+#include "tools/klib.h"
 #include "tools/log.h"
+#include "tools/assert.h"
 
-static addr_allocator_t allocator;
+static addr_allocator_t paddr_allocator;
 
 static void addr_allocator_init(addr_allocator_t* allocator, uint8_t* bits, uint32_t start, uint32_t size, uint32_t page_size)
 {
@@ -47,7 +49,30 @@ static void show_memory_info(boot_info_t* boot_info)
     }
 }
 
+static uint32_t total_memory_size(boot_info_t* boot_info)
+{
+    uint32_t total_size = 0;
+    for (uint32_t i = 0; i < boot_info->ram_region_count; i++)
+    {
+        total_size += boot_info->ram_region_cfg[i].size;
+    }
+    return total_size;
+}
+
 void memory_init(boot_info_t* boot_info)
 {
+    extern uint8_t* mem_free_start;
+
     show_memory_info(boot_info);
+    uint32_t total_size = total_memory_size(boot_info) - MEM_EXT_START;
+    total_size = down2(total_size, MEM_PAGE_SIZE);
+    log_printf("Total Memory Size: %d bytes", total_size);
+
+    uint8_t* mem_free = mem_free_start;
+
+    addr_allocator_init(&paddr_allocator, mem_free, MEM_EXT_START, total_size, MEM_PAGE_SIZE);
+
+    mem_free+= bitmap_byte_count(paddr_allocator.size / MEM_PAGE_SIZE);
+
+    assert(mem_free < (uint8_t*) MEM_EBDA_START);
 }

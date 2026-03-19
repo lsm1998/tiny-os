@@ -7,15 +7,15 @@ void bitmap_init(bitmap_t* bitmap, uint8_t* bits, int bit_count, uint8_t default
     bitmap->bits = bits;
 
     // 计算需要的字节数
-    int byte_count = bitmap_byte_count(bitmap);
+    int byte_count = bitmap_byte_count(bitmap->bit_count);
 
     // 初始化位图数据
     kernel_memset(bits, default_value ? 0xFF : 0x00, byte_count);
 }
 
-int bitmap_byte_count(bitmap_t* bitmap)
+int bitmap_byte_count(int bit_count)
 {
-    return bitmap ? (bitmap->bit_count + 7) / 8 : 0;
+    return (bit_count + 7) / 8;
 }
 
 int bitmap_get_bit(bitmap_t* bitmap, int index)

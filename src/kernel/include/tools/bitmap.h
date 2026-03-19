@@ -11,7 +11,7 @@ typedef struct bitmap_t
 
 void bitmap_init(bitmap_t* bitmap, uint8_t* bits, int bit_count, uint8_t default_value);
 
-int bitmap_byte_count(bitmap_t* bitmap);
+int bitmap_byte_count(int bit_count);
 
 int bitmap_get_bit(bitmap_t* bitmap, int index);
 
