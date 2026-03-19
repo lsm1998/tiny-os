@@ -68,7 +68,7 @@ void memory_init(boot_info_t* boot_info)
     total_size = down2(total_size, MEM_PAGE_SIZE);
     log_printf("Total Memory Size: %d bytes", total_size);
 
-    uint8_t* mem_free = (uint8_t*)mem_free_start;
+    uint8_t* mem_free = (uint8_t*)&mem_free_start;
 
     addr_allocator_init(&paddr_allocator, mem_free, MEM_EXT_START, total_size, MEM_PAGE_SIZE);
 
