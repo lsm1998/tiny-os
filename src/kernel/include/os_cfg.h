@@ -37,6 +37,9 @@
 // 内存分配器的起始地址 1MB
 #define MEM_EXT_START (1024 * 1024)
 
+// 内存分配器的结束地址 128MB
+#define MEM_EXT_END (128 * 1024 * 1024 - 1)
+
 // EBDA（Extended BIOS Data Area）的起始地址，通常位于0x80000（512KB）处
 #define MEM_EBDA_START 0x80000
 
