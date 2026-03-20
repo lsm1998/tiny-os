@@ -75,6 +75,30 @@ static inline void write_cr0(uint32_t value)
     __asm__ volatile("mov %[v], %%cr0" : : [v] "r"(value));
 }
 
+static inline uint32_t read_cr3(void)
+{
+    uint32_t value;
+    __asm__ volatile("mov %%cr3, %[v]" : [v] "=r"(value));
+    return value;
+}
+
+static inline void write_cr3(uint32_t value)
+{
+    __asm__ volatile("mov %[v], %%cr3" : : [v] "r"(value));
+}
+
+static inline uint32_t read_cr4(void)
+{
+    uint32_t value;
+    __asm__ volatile("mov %%cr4, %[v]" : [v] "=r"(value));
+    return value;
+}
+
+static inline void write_cr4(uint32_t value)
+{
+    __asm__ volatile("mov %[v], %%cr4" : : [v] "r"(value));
+}
+
 static inline void far_jump(uint16_t selector, uint32_t offset)
 {
     uint32_t addr[] = {offset, selector};

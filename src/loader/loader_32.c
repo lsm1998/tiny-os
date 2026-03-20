@@ -1,4 +1,5 @@
 #include "comm/cpu_instr.h"
+#include "comm/elf.h"
 #include "loader.h"
 
 #define SYS_KERNEL_START_SECTOR 100
@@ -8,72 +9,6 @@
 #define ELF32_MACHINE_386 3
 #define ELF32_PT_LOAD 1
 #define ELF32_PROGRAM_HEADER_MAX 16
-
-typedef struct elf32_header_t
-{
-    uint8_t e_ident[ELF32_IDENT_SIZE];
-    uint16_t e_type;
-    uint16_t e_machine;
-    uint32_t e_version;
-    uint32_t e_entry;
-    uint32_t e_phoff;
-    uint32_t e_shoff;
-    uint32_t e_flags;
-    uint16_t e_ehsize;
-    uint16_t e_phentsize;
-    uint16_t e_phnum;
-    uint16_t e_shentsize;
-    uint16_t e_shnum;
-    uint16_t e_shstrndx;
-} __attribute__((packed)) elf32_header_t;
-
-typedef struct elf32_program_header_t
-{
-    uint32_t p_type;
-    uint32_t p_offset;
-    uint32_t p_vaddr;
-    uint32_t p_paddr;
-    uint32_t p_filesz;
-    uint32_t p_memsz;
-    uint32_t p_flags;
-    uint32_t p_align;
-} __attribute__((packed)) elf32_program_header_t;
-
-static uint8_t kernel_sector_buffer[SECTOR_SIZE];
-static elf32_header_t kernel_header;
-
-// 小内存环境里只缓存 ELF 头和 program header，再按需读取各段内容。
-static elf32_program_header_t kernel_program_headers[ELF32_PROGRAM_HEADER_MAX];
-
-static void halt_forever(void)
-{
-    cli();
-    for (;;)
-    {
-        hlt();
-    }
-}
-
-static void copy_bytes(void* dst, const void* src, uint32_t size)
-{
-    uint8_t* dst_bytes = (uint8_t*)dst;
-    const uint8_t* src_bytes = (const uint8_t*)src;
-
-    while (size--)
-    {
-        *dst_bytes++ = *src_bytes++;
-    }
-}
-
-static void zero_bytes(void* dst, uint32_t size)
-{
-    uint8_t* dst_bytes = (uint8_t*)dst;
-
-    while (size--)
-    {
-        *dst_bytes++ = 0;
-    }
-}
 
 static void read_disk(uint32_t sector, uint32_t count, void* buffer)
 {
@@ -108,93 +43,89 @@ static void read_disk(uint32_t sector, uint32_t count, void* buffer)
     }
 }
 
-static void read_kernel_bytes(uint32_t file_offset, uint32_t size, void* buffer)
+static uint32_t reload_elf_file(uint8_t* file_buffer)
 {
-    uint8_t* dst = (uint8_t*)buffer;
-
-    while (size > 0)
+    Elf32_Ehdr* elf_hdr = (Elf32_Ehdr*)file_buffer;
+    if ((elf_hdr->e_ident[0] != ELF_MAGIC) || (elf_hdr->e_ident[1] != 'E') || (elf_hdr->e_ident[2] != 'L') || (elf_hdr->e_ident[3] != 'F'))
     {
-        // 内核在磁盘上仍然是 ELF 文件，这里按文件偏移换算回实际扇区位置
-        uint32_t sector = SYS_KERNEL_START_SECTOR + (file_offset / SECTOR_SIZE);
-        uint32_t sector_offset = file_offset % SECTOR_SIZE;
-        uint32_t chunk_size = SECTOR_SIZE - sector_offset;
+        return 0;
+    }
 
-        if (chunk_size > size)
+    // 然后从中加载程序头，将内容拷贝到相应的位置
+    for (int i = 0; i < elf_hdr->e_phnum; i++)
+    {
+        Elf32_Phdr* phdr = (Elf32_Phdr*)(file_buffer + elf_hdr->e_phoff) + i;
+        if (phdr->p_type != PT_LOAD)
         {
-            chunk_size = size;
+            continue;
         }
 
-        read_disk(sector, 1, kernel_sector_buffer);
-        copy_bytes(dst, kernel_sector_buffer + sector_offset, chunk_size);
+        // 全部使用物理地址，此时分页机制还未打开
+        uint8_t* src = file_buffer + phdr->p_offset;
+        uint8_t* dest = (uint8_t*)phdr->p_paddr;
+        for (int j = 0; j < phdr->p_filesz; j++)
+        {
+            *dest++ = *src++;
+        }
 
-        dst += chunk_size;
-        file_offset += chunk_size;
-        size -= chunk_size;
+        // memsz和filesz不同时，后续要填0
+        dest = (uint8_t*)phdr->p_paddr + phdr->p_filesz;
+        for (int j = 0; j < phdr->p_memsz - phdr->p_filesz; j++)
+        {
+            *dest++ = 0;
+        }
+    }
+
+    return elf_hdr->e_entry;
+}
+
+static void die(int code)
+{
+    for (;;)
+    {
     }
 }
 
-static int elf32_header_is_valid(const elf32_header_t* header)
+void enable_page_mode(void)
 {
-    return header->e_ident[0] == 0x7F &&
-           header->e_ident[1] == 'E' &&
-           header->e_ident[2] == 'L' &&
-           header->e_ident[3] == 'F' &&
-           header->e_ident[4] == ELF32_CLASS &&
-           header->e_ident[5] == ELF32_DATA_LSB &&
-           header->e_machine == ELF32_MACHINE_386 &&
-           header->e_version == 1;
-}
+#define PDE_P (1 << 0)
+#define PDE_PS (1 << 7)
+#define PDE_W (1 << 1)
+#define CR4_PSE (1 << 4)
+#define CR0_PG (1 << 31)
 
-static void load_elf_segment(const elf32_program_header_t* program_header)
-{
-    uint32_t segment_addr = program_header->p_paddr ? program_header->p_paddr : program_header->p_vaddr;
+    // 使用4MB页块，这样构造页表就简单很多，只需要1个表即可。
+    // 以下表为临时使用，用于帮助内核正常运行，在内核运行起来之后，将重新设置
+    static uint32_t page_dir[1024] __attribute__((aligned(4096))) = {
+        [0] = PDE_P | PDE_PS | PDE_W, // PDE_PS，开启4MB的页
+    };
 
-    if (program_header->p_memsz < program_header->p_filesz || segment_addr == 0)
-    {
-        halt_forever();
-    }
+    // 设置PSE，以便启用4M的页，而不是4KB
+    uint32_t cr4 = read_cr4();
+    write_cr4(cr4 | CR4_PSE);
 
-    // 先清零整个内存段，既能处理 .bss，也能覆盖 file size 之后的尾部空洞
-    zero_bytes((void*)segment_addr, program_header->p_memsz);
+    // 设置页表地址
+    write_cr3((uint32_t)page_dir);
 
-    if (program_header->p_filesz > 0)
-    {
-        read_kernel_bytes(program_header->p_offset, program_header->p_filesz, (void*)segment_addr);
-    }
+    // 开启分页机制
+    write_cr0(read_cr0() | CR0_PG);
 }
 
 void load_kernel(void)
 {
-    // 先读取 ELF 头，拿到 program header 表和最终入口地址
-    read_kernel_bytes(0, sizeof(kernel_header), &kernel_header);
-    if (!elf32_header_is_valid(&kernel_header) ||
-        kernel_header.e_phentsize != sizeof(elf32_program_header_t) ||
-        kernel_header.e_phnum == 0 ||
-        kernel_header.e_phnum > ELF32_PROGRAM_HEADER_MAX)
+    read_disk(100, 500, (uint8_t*)SYS_KERNEL_LOAD_ADDR);
+
+    uint32_t kernel_entry = reload_elf_file((uint8_t*)SYS_KERNEL_LOAD_ADDR);
+    if (kernel_entry == 0)
     {
-        halt_forever();
+        die(-1);
     }
 
-    read_kernel_bytes(kernel_header.e_phoff,
-                      kernel_header.e_phnum * sizeof(elf32_program_header_t),
-                      kernel_program_headers);
+    // 开启分页机制
+    enable_page_mode();
 
-    // loader 只关心需要映射到内存的 PT_LOAD 段
-    for (uint32_t i = 0; i < kernel_header.e_phnum; i++)
+    ((void (*)(boot_info_t*))kernel_entry)(&boot_info);
+    for (;;)
     {
-        if (kernel_program_headers[i].p_type == ELF32_PT_LOAD)
-        {
-            load_elf_segment(&kernel_program_headers[i]);
-        }
     }
-
-    if (kernel_header.e_entry == 0)
-    {
-        halt_forever();
-    }
-
-    // 入口仍然按旧接口接收 boot_info_t*，只是地址改为来自 ELF 的 e_entry
-    ((void (*)(boot_info_t*))kernel_header.e_entry)(&boot_info);
-
-    halt_forever();
 }
