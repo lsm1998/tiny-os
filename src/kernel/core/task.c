@@ -20,6 +20,7 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
     assert(tss_selector >= 0);
     segment_desc_set(tss_selector, (uint32_t)&task->tss, sizeof(task->tss),
                      SEG_P_PRESENT | SEG_DPL0 | SEG_TYPE_TSS);
+    task->tss.cr3 = read_cr3();
     task->tss.eip = entry;
     task->tss.esp = task->tss.esp0 = esp;
     task->tss.ss = task->tss.ss0 = KERNEL_SELECTOR_DS;
