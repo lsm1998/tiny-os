@@ -4,9 +4,9 @@
 #include "tools/log.h"
 
 #ifdef RELEASE
-#define assert(condition) ((void)0)
+#define ASSERT(condition) ((void)0)
 #else
-#define assert(condition)                                                         \
+#define ASSERT(condition)                                                         \
     do {                                                                          \
         if (!(condition))                                                         \
         {                                                                         \

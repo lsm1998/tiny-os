@@ -114,7 +114,7 @@ int memory_create_map(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, int count
             return -1;
         }
 
-        assert(pte->present == 0);
+        ASSERT(pte->present == 0);
 
         pte->v = paddr | perm | PTE_P;
 
@@ -171,7 +171,7 @@ void memory_init(boot_info_t* boot_info)
 
     mem_free += bitmap_byte_count(paddr_allocator.size / MEM_PAGE_SIZE);
 
-    assert(mem_free < (uint8_t*)MEM_EBDA_START);
+    ASSERT(mem_free < (uint8_t*)MEM_EBDA_START);
 
     // 创建内核页表并切换过去
     create_kernel_table();

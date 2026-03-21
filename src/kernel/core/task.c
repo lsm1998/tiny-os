@@ -19,7 +19,7 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
 {
     kernel_memset(&task->tss, 0, sizeof(task->tss));
     int tss_selector = gdt_alloc_desc();
-    assert(tss_selector >= 0);
+    ASSERT(tss_selector >= 0);
     segment_desc_set(tss_selector, (uint32_t)&task->tss, sizeof(task->tss),
                      SEG_P_PRESENT | SEG_DPL0 | SEG_TYPE_TSS);
     // task->tss.cr3 = read_cr3();
@@ -43,8 +43,8 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
 
 void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp)
 {
-    assert(task != NULL);
-    assert(name != NULL);
+    ASSERT(task != NULL);
+    ASSERT(name != NULL);
     tss_init(task, entry, esp);
     list_node_init(&task->run_node);
     list_node_init(&task->all_node);
@@ -74,7 +74,7 @@ static void idle_task_entry(void)
 
 void task_switch(task_t* from, task_t* to)
 {
-    assert(from != NULL && to != NULL);
+    ASSERT(from != NULL && to != NULL);
     if (from == to)
     {
         return;
@@ -106,7 +106,7 @@ void task_first_init(void)
     write_tr(g_task_manager.first_task.tss_selector);
     g_task_manager.current_task = &g_task_manager.first_task;
 
-    mmu_set_page_dir((uint32_t)&g_task_manager.first_task.tss.cr3);
+    mmu_set_page_dir(g_task_manager.first_task.tss.cr3);
 }
 
 task_t* get_task_current(void)
@@ -121,7 +121,7 @@ task_t* get_task_first(void)
 
 void task_set_ready(task_t* task)
 {
-    assert(task != NULL);
+    ASSERT(task != NULL);
     if (task == &g_task_manager.idle_task)
     {
         return;

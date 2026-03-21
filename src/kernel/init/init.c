@@ -1,5 +1,4 @@
 #include "init.h"
-#include "comm/cpu_instr.h"
 #include "tools/assert.h"
 #include "os_cfg.h"
 #include "comm/boot_info.h"
@@ -12,7 +11,7 @@
 
 void kernel_init(boot_info_t* boot_info)
 {
-    assert(boot_info->ram_region_count > 0);
+    ASSERT(boot_info->ram_region_count > 0);
     cpu_init();
     memory_init(boot_info);
     log_init();
@@ -23,8 +22,11 @@ void kernel_init(boot_info_t* boot_info)
 
 void move_to_first_task()
 {
-    void first_task_entry();
-    first_task_entry();
+    task_t* current = get_task_current();
+    ASSERT(current != NULL);
+
+    tss_t* tss = &current->tss;
+    __asm__ volatile("jmp *%[ip]" ::[ip] "r"(tss->eip));
 }
 
 void init_main(void)
