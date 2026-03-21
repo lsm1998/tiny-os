@@ -7,6 +7,7 @@
 #include "os_cfg.h"
 #include "tools/list.h"
 #include "cpu/irq.h"
+#include "cpu/mmu.h"
 
 // 任务管理器
 static task_manager_t g_task_manager;
@@ -99,9 +100,13 @@ void task_manager_init(void)
 
 void task_first_init(void)
 {
-    task_init(&g_task_manager.first_task, "First Task", 0, 0);
+    void first_task_entry(void);
+    uint32_t first_start = (uint32_t)first_task_entry;
+    task_init(&g_task_manager.first_task, "First Task", first_start, 0);
     write_tr(g_task_manager.first_task.tss_selector);
     g_task_manager.current_task = &g_task_manager.first_task;
+
+    mmu_set_page_dir((uint32_t)&g_task_manager.first_task.tss.cr3);
 }
 
 task_t* get_task_current(void)
