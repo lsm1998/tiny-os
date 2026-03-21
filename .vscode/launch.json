@@ -36,7 +36,7 @@
             "osx": {
                 "preLaunchTask": "VSCode 调试准备",
                 "postDebugTask": "停止 QEMU 调试",
-                "miDebuggerPath": "gdb"
+                "miDebuggerPath": "x86_64-elf-gdb"
             },
             "customLaunchSetupCommands": [],
             "setupCommands": [
@@ -67,7 +67,7 @@
                 },
                 {
                     "description": "加载kernel符号文件",
-                    "text": "add-symbol-file ${workspaceFolder}/build/src/kernel/kernel.elf 0x100000",
+                    "text": "add-symbol-file ${workspaceFolder}/build/src/kernel/kernel.elf 0x10000",
                     "ignoreFailures": false
                 }
             ],
@@ -104,7 +104,7 @@
             "osx": {
                 "preLaunchTask": "VSCode 调试准备（保留QEMU界面）",
                 "postDebugTask": "停止 QEMU 调试（保留QEMU界面）",
-                "miDebuggerPath": "gdb"
+                "miDebuggerPath": "x86_64-elf-gdb"
             },
             "customLaunchSetupCommands": [],
             "setupCommands": [
@@ -135,7 +135,7 @@
                 },
                 {
                     "description": "加载kernel符号文件",
-                    "text": "add-symbol-file ${workspaceFolder}/build/src/kernel/kernel.elf 0x100000",
+                    "text": "add-symbol-file ${workspaceFolder}/build/src/kernel/kernel.elf 0x10000",
                     "ignoreFailures": false
                 }
             ],
