@@ -1,5 +1,6 @@
 #include "core/memory.h"
 #include "ipc/mutex.h"
+#include "os_cfg.h"
 #include "tools/bitmap.h"
 #include "tools/klib.h"
 #include "tools/log.h"
@@ -177,4 +178,25 @@ void memory_init(boot_info_t* boot_info)
 
     // 切换到内核页表
     mmu_set_page_dir((uint32_t)kernel_page_dir);
+}
+
+uint32_t memory_create_uvm(void)
+{
+    // 分配一个页目录
+    pde_t* page_dir = (pde_t*)addr_allocator_page(&paddr_allocator, 1);
+    if (page_dir == NULL)
+    {
+        return 0;
+    }
+    // 初始化页目录
+    kernel_memset(page_dir, 0, MEM_PAGE_SIZE);
+
+    // 将内核页目录的前面部分复制过来，保持内核地址空间一致
+    uint32_t page_dir_start = pde_index(MEM_TASK_BASE);
+    for (uint32_t i = 0; i < page_dir_start; i++)
+    {
+        page_dir[i].v = kernel_page_dir[i].v;
+    }
+
+    return (uint32_t)page_dir;
 }

@@ -83,3 +83,16 @@ void switch_to_tss(int tss_selector)
 {
     far_jump(tss_selector, 0);
 }
+
+void gdt_free_sel(int selector)
+{
+    if (selector < 8 || selector >= GDT_TABLE_SIZE * 8)
+    {
+        return; // 无效的选择子
+    }
+    int index = selector >> 3;
+    mutex_lock(&gdt_mutex);
+    // 将描述符重置为无效
+    segment_desc_set(selector, 0, 0, 0);
+    mutex_unlock(&gdt_mutex);
+}

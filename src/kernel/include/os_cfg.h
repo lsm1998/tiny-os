@@ -43,4 +43,7 @@
 // EBDA（Extended BIOS Data Area）的起始地址，通常位于0x80000（512KB）处
 #define MEM_EBDA_START 0x80000
 
+// 任务的内存映射起始地址
+#define MEM_TASK_BASE 0x80000000
+
 #endif // __OS_CFG_H__

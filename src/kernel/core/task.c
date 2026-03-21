@@ -1,4 +1,5 @@
 #include "core/task.h"
+#include "core/memory.h"
 #include "comm/cpu_instr.h"
 #include "cpu/cpu.h"
 #include "tools/assert.h"
@@ -20,7 +21,7 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
     assert(tss_selector >= 0);
     segment_desc_set(tss_selector, (uint32_t)&task->tss, sizeof(task->tss),
                      SEG_P_PRESENT | SEG_DPL0 | SEG_TYPE_TSS);
-    task->tss.cr3 = read_cr3();
+    // task->tss.cr3 = read_cr3();
     task->tss.eip = entry;
     task->tss.esp = task->tss.esp0 = esp;
     task->tss.ss = task->tss.ss0 = KERNEL_SELECTOR_DS;
@@ -28,6 +29,15 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
     task->tss.cs = KERNEL_SELECTOR_CS;
     task->tss.eflags = EFLAGS_IF | EFLAGS_DEFAULT;
     task->tss_selector = tss_selector;
+
+    // 为每个任务创建独立的页目录表，保持内核地址空间一致
+    uint32_t page_dir = memory_create_uvm();
+    if (page_dir == 0)
+    {
+        gdt_free_sel(tss_selector);
+        return;
+    }
+    task->tss.cr3 = page_dir;
 }
 
 void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp)

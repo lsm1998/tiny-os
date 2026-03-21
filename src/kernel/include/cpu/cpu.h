@@ -93,6 +93,8 @@ void gate_desc_set(gate_desc_t* desc, uint32_t offset, uint16_t selector, uint16
 
 int gdt_alloc_desc();
 
+void gdt_free_sel(int selector);
+
 void switch_to_tss(int tss_selector);
 
 #endif // __CPU_H__
