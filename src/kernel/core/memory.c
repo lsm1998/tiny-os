@@ -107,12 +107,9 @@ int memory_create_map(pde_t* page_dir, uint32_t vaddr, uint32_t paddr, int count
 {
     for (int i = 0; i < count; i++)
     {
-        // log_printf("create map: v-0x%x p-0x%x, perm: 0x%x", vaddr, paddr, perm);
-
         pte_t* pte = find_pte(page_dir, vaddr, 1);
-        if (pte == (pte_t*)0)
+        if (pte == NULL)
         {
-            // log_printf("create pte failed. pte == 0");
             return -1;
         }
 
@@ -153,6 +150,7 @@ static void create_kernel_table(void)
         int vend = up2((uint32_t)map->vend, MEM_PAGE_SIZE);
         int page_count = (vend - vstart) / MEM_PAGE_SIZE;
 
+        // 创建映射关系
         memory_create_map(kernel_page_dir, vstart, (uint32_t)map->pstart, page_count, map->perm);
     }
 }
