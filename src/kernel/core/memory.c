@@ -200,3 +200,33 @@ uint32_t memory_create_uvm(void)
 
     return (uint32_t)page_dir;
 }
+
+static int memory_alloc_page_dir(uint32_t page_dir_paddr, uint32_t vaddr, uint32_t size, uint32_t perm)
+{
+    uint32_t curr_vaddr = vaddr;
+    int page_count = up2(size, MEM_PAGE_SIZE) / MEM_PAGE_SIZE;
+    for (int i = 0; i < page_count; i++)
+    {
+        uint32_t paddr = addr_allocator_page(&paddr_allocator, 1);
+        if (paddr == 0)
+        {
+            log_printf("Failed to allocate physical page for vaddr 0x%x", curr_vaddr);
+            return -1;
+        }
+
+        int ret = memory_create_map((pde_t*)page_dir_paddr, curr_vaddr, paddr, 1, perm);
+        if (ret < 0)
+        {
+            log_printf("Failed to create page mapping for vaddr 0x%x", curr_vaddr);
+            addr_free_page(&paddr_allocator, paddr, 1);
+            return ret;
+        }
+        curr_vaddr += MEM_PAGE_SIZE;
+    }
+    return curr_vaddr;
+}
+
+int memory_alloc_page(uint32_t vaddr, uint32_t size, uint32_t perm)
+{
+    return memory_alloc_page_dir(get_task_current()->tss.cr3, vaddr, size, perm);
+}

@@ -13,8 +13,8 @@ void kernel_init(boot_info_t* boot_info)
 {
     ASSERT(boot_info->ram_region_count > 0);
     cpu_init();
-    memory_init(boot_info);
     log_init();
+    memory_init(boot_info);
     irq_init();
     time_init();
     task_manager_init();

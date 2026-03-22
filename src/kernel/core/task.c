@@ -101,12 +101,21 @@ void task_manager_init(void)
 void task_first_init(void)
 {
     void first_task_entry(void);
+    extern uint8_t s_first_task[], e_first_task[];
+
+    uint32_t copy_size = (uint32_t)(e_first_task - s_first_task);
+    uint32_t alloc_size = 10 * MEM_PAGE_SIZE;
+    ASSERT(copy_size < alloc_size);
+
     uint32_t first_start = (uint32_t)first_task_entry;
     task_init(&g_task_manager.first_task, "First Task", first_start, 0);
     write_tr(g_task_manager.first_task.tss_selector);
     g_task_manager.current_task = &g_task_manager.first_task;
 
     mmu_set_page_dir(g_task_manager.first_task.tss.cr3);
+
+    memory_alloc_page(first_start, alloc_size, PTE_P | PTE_W);
+    kernel_memcpy((void*)first_start, s_first_task, copy_size);
 }
 
 task_t* get_task_current(void)
