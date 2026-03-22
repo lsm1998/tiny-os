@@ -75,6 +75,18 @@ static inline void write_cr0(uint32_t value)
     __asm__ volatile("mov %[v], %%cr0" : : [v] "r"(value));
 }
 
+static inline uint32_t read_cr2(void)
+{
+    uint32_t value;
+    __asm__ volatile("mov %%cr2, %[v]" : [v] "=r"(value));
+    return value;
+}
+
+static inline void write_cr2(uint32_t value)
+{
+    __asm__ volatile("mov %[v], %%cr2" : : [v] "r"(value));
+}
+
 static inline uint32_t read_cr3(void)
 {
     uint32_t value;

@@ -15,7 +15,7 @@ static task_manager_t g_task_manager;
 // 空闲任务栈
 static uint32_t g_idle_task_stack[IDLE_STACK_SIZE];
 
-static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
+static void tss_init(task_t* task, int flags, uint32_t entry, uint32_t esp)
 {
     kernel_memset(&task->tss, 0, sizeof(task->tss));
     int tss_selector = gdt_alloc_desc();
@@ -26,9 +26,16 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
     int code_selector = g_task_manager.app_code_selector | SEG_CPL3;
     int data_selector = g_task_manager.app_data_selector | SEG_CPL3;
 
+    if(flags & TASK_FLAG_SYSTEM)
+    {
+        code_selector = KERNEL_SELECTOR_CS;
+        data_selector = KERNEL_SELECTOR_DS;
+    }
+
     task->tss.eip = entry;
     task->tss.esp = task->tss.esp0 = esp;
-    task->tss.ss = task->tss.ss0 = data_selector;
+    task->tss.ss0 = KERNEL_SELECTOR_DS;
+    task->tss.ss = data_selector;
     task->tss.es = task->tss.ds = task->tss.fs = task->tss.gs = data_selector;
     task->tss.cs = code_selector;
     task->tss.eflags = EFLAGS_IF | EFLAGS_DEFAULT;
@@ -44,11 +51,11 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
     task->tss.cr3 = page_dir;
 }
 
-void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp)
+void task_init(task_t* task, const char* name, int flags, uint32_t entry, uint32_t esp)
 {
     ASSERT(task != NULL);
     ASSERT(name != NULL);
-    tss_init(task, entry, esp);
+    tss_init(task, flags, entry, esp);
     list_node_init(&task->run_node);
     list_node_init(&task->all_node);
     list_node_init(&task->wait_node);
@@ -110,6 +117,7 @@ void task_manager_init(void)
     // 初始化空闲任务
     task_init(&g_task_manager.idle_task,
               "Idle Task",
+              TASK_FLAG_SYSTEM,
               (uint32_t)idle_task_entry,
               (uint32_t)(g_idle_task_stack + IDLE_STACK_SIZE));
 }
@@ -124,7 +132,7 @@ void task_first_init(void)
     ASSERT(copy_size < alloc_size);
 
     uint32_t first_start = (uint32_t)first_task_entry;
-    task_init(&g_task_manager.first_task, "First Task", first_start, 0);
+    task_init(&g_task_manager.first_task, "First Task", TASK_FLAG_USER, first_start, 0);
     write_tr(g_task_manager.first_task.tss_selector);
     g_task_manager.current_task = &g_task_manager.first_task;
 

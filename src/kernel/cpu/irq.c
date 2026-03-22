@@ -90,6 +90,18 @@ void do_handler_general_protection(exception_frame_t* frame)
 
 void do_handler_page_fault(exception_frame_t* frame)
 {
+    if (frame->error_code & ERR_PAGE_P)
+    {
+        log_printf("Page fault: not-present page");
+    }
+    if (frame->error_code & ERR_PAGE_WR)
+    {
+        log_printf("Page fault: write access");
+    }
+    if (frame->error_code & ERR_PAGE_US)
+    {
+        log_printf("Page fault: user-mode access");
+    }
     do_handler_default(frame, "page fault exception");
 }
 

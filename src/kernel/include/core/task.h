@@ -6,6 +6,11 @@
 #include "tools/list.h"
 #include "os_cfg.h"
 
+// 系统进程
+#define TASK_FLAG_SYSTEM (1 << 0)
+// 用户进程
+#define TASK_FLAG_USER (1 << 1)
+
 typedef enum task_state_t
 {
     TASK_CREATED, // 创建状态
@@ -14,6 +19,7 @@ typedef enum task_state_t
     TASK_READY,   // 就绪状态
     TASK_WAITING, // 等待状态
 } task_state_t;
+
 typedef struct task_t
 {
     list_node_t run_node;         // 运行队列节点
@@ -40,7 +46,7 @@ typedef struct task_manager_t
     int app_data_selector; // 应用程序数据段选择子
 } task_manager_t;
 
-void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp);
+void task_init(task_t* task, const char* name, int flags, uint32_t entry, uint32_t esp);
 
 void task_switch(task_t* from, task_t* to);
 

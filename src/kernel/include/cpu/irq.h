@@ -50,6 +50,10 @@
 
 #define PIC_OCW2_EOI (1 << 5)
 
+#define ERR_PAGE_P (1 << 0)
+#define ERR_PAGE_WR (1 << 1)
+#define ERR_PAGE_US (1 << 2)
+
 typedef uint32_t irq_state_t;
 
 typedef struct exception_frame_t
@@ -58,6 +62,7 @@ typedef struct exception_frame_t
     uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
     uint32_t irq_num, error_code;
     uint32_t eip, cs, eflags;
+    uint32_t esp3, ss3;
 } exception_frame_t;
 
 typedef void (*irq_handler_t)(exception_frame_t* frame);
