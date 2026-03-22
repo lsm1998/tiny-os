@@ -30,12 +30,14 @@ typedef struct task_t
 
 typedef struct task_manager_t
 {
-    task_t* current_task; // 当前进程
-    list_t ready_list;    // 就绪队列
-    list_t task_list;     // 所有进程列表
-    list_t sleep_list;    // 睡眠队列
-    task_t first_task;    // 第一个进程（内核进程）
-    task_t idle_task;     // 空闲进程
+    task_t* current_task;  // 当前进程
+    list_t ready_list;     // 就绪队列
+    list_t task_list;      // 所有进程列表
+    list_t sleep_list;     // 睡眠队列
+    task_t first_task;     // 第一个进程（内核进程）
+    task_t idle_task;      // 空闲进程
+    int app_code_selector; // 应用程序代码段选择子
+    int app_data_selector; // 应用程序数据段选择子
 } task_manager_t;
 
 void task_init(task_t* task, const char* name, uint32_t entry, uint32_t esp);

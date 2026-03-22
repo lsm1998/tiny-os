@@ -22,12 +22,15 @@ static void tss_init(task_t* task, uint32_t entry, uint32_t esp)
     ASSERT(tss_selector >= 0);
     segment_desc_set(tss_selector, (uint32_t)&task->tss, sizeof(task->tss),
                      SEG_P_PRESENT | SEG_DPL0 | SEG_TYPE_TSS);
-    // task->tss.cr3 = read_cr3();
+
+    int code_selector = g_task_manager.app_code_selector | SEG_CPL3;
+    int data_selector = g_task_manager.app_data_selector | SEG_CPL3;
+
     task->tss.eip = entry;
     task->tss.esp = task->tss.esp0 = esp;
-    task->tss.ss = task->tss.ss0 = KERNEL_SELECTOR_DS;
-    task->tss.es = task->tss.ds = task->tss.fs = task->tss.gs = KERNEL_SELECTOR_DS;
-    task->tss.cs = KERNEL_SELECTOR_CS;
+    task->tss.ss = task->tss.ss0 = data_selector;
+    task->tss.es = task->tss.ds = task->tss.fs = task->tss.gs = data_selector;
+    task->tss.cs = code_selector;
     task->tss.eflags = EFLAGS_IF | EFLAGS_DEFAULT;
     task->tss_selector = tss_selector;
 
@@ -86,6 +89,19 @@ void task_switch(task_t* from, task_t* to)
 
 void task_manager_init(void)
 {
+    // 初始化应用程序代码段和数据段选择子
+    int selector = gdt_alloc_desc();
+    ASSERT(selector >= 0);
+    segment_desc_set(selector, 0x00000000, 0xFFFFFFFF,
+                     SEG_P_PRESENT | SEG_DPL3 | SEG_D | SEG_TYPE_RW | SEG_TYPE_DATA | SEG_S_NORMAL);
+    g_task_manager.app_data_selector = selector;
+
+    selector = gdt_alloc_desc();
+    ASSERT(selector >= 0);
+    segment_desc_set(selector, 0x00000000, 0xFFFFFFFF,
+                     SEG_P_PRESENT | SEG_DPL3 | SEG_D | SEG_TYPE_RW | SEG_TYPE_CODE | SEG_S_NORMAL);
+    g_task_manager.app_code_selector = selector;
+
     g_task_manager.current_task = NULL;
     list_init(&g_task_manager.ready_list);
     list_init(&g_task_manager.task_list);

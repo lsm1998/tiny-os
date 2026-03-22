@@ -67,6 +67,12 @@ typedef struct tss_t
 // 特权级3
 #define SEG_DPL3 (3 << 5)
 
+// S位，系统段
+#define SEG_CPL0 0
+
+// S位，代码/数据段
+#define SEG_CPL3 3
+
 // S=0，系统段
 #define SEG_S_SYSTEM 0
 
