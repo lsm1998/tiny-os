@@ -9,7 +9,7 @@
 // 系统进程
 #define TASK_FLAG_SYSTEM (1 << 0)
 // 用户进程
-#define TASK_FLAG_USER (1 << 1)
+#define TASK_FLAG_USER 0
 
 typedef enum task_state_t
 {
