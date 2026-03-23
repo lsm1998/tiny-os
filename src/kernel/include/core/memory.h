@@ -28,4 +28,8 @@ uint32_t memory_create_uvm(void);
 
 int memory_alloc_page(uint32_t vaddr, uint32_t size, uint32_t perm);
 
+uint32_t memory_alloc_page1(void);
+
+void memory_free_page1(uint32_t paddr);
+
 #endif // __MEMORY_H__

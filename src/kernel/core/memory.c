@@ -90,10 +90,10 @@ pte_t* find_pte(pde_t* page_dir, uint32_t vaddr, int alloc)
         }
 
         // 设置为用户可读写，将被pte中设置所覆盖
-        pde->v = pg_paddr | PTE_P | PTE_W;
+        pde->v = pg_paddr | PTE_P | PTE_W | PDE_U;
 
         // 为物理页表绑定虚拟地址的映射，这样下面就可以计算出虚拟地址了
-        // kernel_pg_last[pde_index(vaddr)].v = pg_paddr | PTE_P | PTE_W;
+        // kernel_pg_last[pde_index(vaddr)].v = pg_paddr | PTE_P | PTE_W | PTE_U;
 
         // 清空页表，防止出现异常
         // 这里虚拟地址和物理地址一一映射，所以直接写入
@@ -229,4 +229,34 @@ static int memory_alloc_page_dir(uint32_t page_dir_paddr, uint32_t vaddr, uint32
 int memory_alloc_page(uint32_t vaddr, uint32_t size, uint32_t perm)
 {
     return memory_alloc_page_dir(get_task_current()->tss.cr3, vaddr, size, perm);
+}
+
+uint32_t memory_alloc_page1(void)
+{
+    uint32_t paddr = addr_allocator_page(&paddr_allocator, 1);
+    return paddr;
+}
+
+static pde_t* current_page_dir(void)
+{
+    return (pde_t*)(get_task_current()->tss.cr3);
+}
+
+static uint32_t pte_paddr(pte_t* pte)
+{
+    return pte->phy_page_addr << 12;
+}
+
+void memory_free_page1(uint32_t paddr)
+{
+    if (paddr < MEM_TASK_BASE)
+    {
+        addr_free_page(&paddr_allocator, paddr, 1);
+        return;
+    }
+    pte_t* pte = find_pte(current_page_dir(), paddr, 0);
+    ASSERT(pte != NULL && pte->present);
+    addr_free_page(&paddr_allocator, pte_paddr(pte), 1);
+    // 直接清空pte，表示未映射
+    pte->v = 0;
 }

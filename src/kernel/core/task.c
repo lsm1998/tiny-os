@@ -15,7 +15,7 @@ static task_manager_t g_task_manager;
 // 空闲任务栈
 static uint32_t g_idle_task_stack[IDLE_STACK_SIZE];
 
-static void tss_init(task_t* task, int flags, uint32_t entry, uint32_t esp)
+static int tss_init(task_t* task, int flags, uint32_t entry, uint32_t esp)
 {
     kernel_memset(&task->tss, 0, sizeof(task->tss));
     int tss_selector = gdt_alloc_desc();
@@ -23,17 +23,25 @@ static void tss_init(task_t* task, int flags, uint32_t entry, uint32_t esp)
     segment_desc_set(tss_selector, (uint32_t)&task->tss, sizeof(task->tss),
                      SEG_P_PRESENT | SEG_DPL0 | SEG_TYPE_TSS);
 
+    uint32_t kernel_stack = memory_alloc_page1();
+    if (kernel_stack == 0)
+    {
+        goto tss_init_failed;
+    }
+
     int code_selector = g_task_manager.app_code_selector | SEG_CPL3;
     int data_selector = g_task_manager.app_data_selector | SEG_CPL3;
 
-    if(flags & TASK_FLAG_SYSTEM)
+    if (flags & TASK_FLAG_SYSTEM)
     {
         code_selector = KERNEL_SELECTOR_CS;
         data_selector = KERNEL_SELECTOR_DS;
     }
 
     task->tss.eip = entry;
-    task->tss.esp = task->tss.esp0 = esp;
+    task->tss.esp = esp;
+    // 栈顶地址
+    task->tss.esp0 = kernel_stack + MEM_PAGE_SIZE;
     task->tss.ss0 = KERNEL_SELECTOR_DS;
     task->tss.ss = data_selector;
     task->tss.es = task->tss.ds = task->tss.fs = task->tss.gs = data_selector;
@@ -45,10 +53,18 @@ static void tss_init(task_t* task, int flags, uint32_t entry, uint32_t esp)
     uint32_t page_dir = memory_create_uvm();
     if (page_dir == 0)
     {
-        gdt_free_sel(tss_selector);
-        return;
+        goto tss_init_failed;
     }
     task->tss.cr3 = page_dir;
+    return 0;
+
+tss_init_failed:
+    gdt_free_sel(tss_selector);
+    if (kernel_stack > 0)
+    {
+        memory_free_page1(kernel_stack);
+    }
+    return -1;
 }
 
 void task_init(task_t* task, const char* name, int flags, uint32_t entry, uint32_t esp)
@@ -132,13 +148,13 @@ void task_first_init(void)
     ASSERT(copy_size < alloc_size);
 
     uint32_t first_start = (uint32_t)first_task_entry;
-    task_init(&g_task_manager.first_task, "First Task", TASK_FLAG_USER, first_start, 0);
+    task_init(&g_task_manager.first_task, "First Task", TASK_FLAG_USER, first_start, first_start + alloc_size);
     write_tr(g_task_manager.first_task.tss_selector);
     g_task_manager.current_task = &g_task_manager.first_task;
 
     mmu_set_page_dir(g_task_manager.first_task.tss.cr3);
 
-    memory_alloc_page(first_start, alloc_size, PTE_P | PTE_W);
+    memory_alloc_page(first_start, alloc_size, PTE_P | PTE_W | PTE_U);
     kernel_memcpy((void*)first_start, s_first_task, copy_size);
 }
 
