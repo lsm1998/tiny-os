@@ -16,6 +16,9 @@
 // 内核数据段选择子
 #define KERNEL_SELECTOR_DS 0x10
 
+// 系统调用段选择子
+#define SELECTOR_SYSCALL 0x18
+
 // 内核栈的大小
 #define KERNEL_STACK_SIZE (8 * 1024) // 8 KB
 

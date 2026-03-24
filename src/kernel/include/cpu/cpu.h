@@ -43,6 +43,9 @@ typedef struct tss_t
 // 中断门类型
 #define GATE_TYPE_INT (0xE << 8)
 
+// 系统调用门类型
+#define GATE_TYPE_SYSCALL (0xC << 8)
+
 // P位，表示门存在
 #define GATE_P_PRESENT (1 << 15)
 
