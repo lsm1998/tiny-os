@@ -281,7 +281,7 @@ void task_set_wakeup(task_t* task)
     list_remove(&g_task_manager.sleep_list, &task->run_node);
 }
 
-void sys_sleep(uint32_t ms)
+int sys_sleep(uint32_t ms)
 {
     if (ms < OS_TICKS_MS)
     {
@@ -298,4 +298,5 @@ void sys_sleep(uint32_t ms)
         task_dispatch();
     }
     irq_exit_protection(state);
+    return 0;
 }

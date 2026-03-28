@@ -64,7 +64,7 @@ void task_set_block(task_t* task);
 
 void sys_sched_yield(void);
 
-void sys_sleep(uint32_t ms);
+int sys_sleep(uint32_t ms);
 
 task_t* task_next_run(void);
 

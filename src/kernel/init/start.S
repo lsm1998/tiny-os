@@ -100,5 +100,25 @@ simple_switch:
     ret
 
     .global exception_handler_syscall
+    .extern do_handler_syscall
 exception_handler_syscall:
-    ret
+    pusha
+    push %ds
+    push %es
+    push %fs
+    push %gs
+    pushf
+
+    mov %esp,%eax
+    push %eax
+    call do_handler_syscall
+    add $4, %esp
+
+    popf
+    pop %ds
+    pop %es
+    pop %fs
+    pop %gs
+    popa
+
+    retf $(5*4)
