@@ -52,8 +52,8 @@ void init_gdt(void)
     segment_desc_set(KERNEL_SELECTOR_DS, 0, 0xFFFFF,
                      SEG_P_PRESENT | SEG_DPL0 | SEG_S_NORMAL | SEG_TYPE_DATA | SEG_TYPE_RW | SEG_D | SEG_G);
 
-    gate_desc_set((gate_desc_t*)(gdt_table + (SELECTOR_SYSCALL >> 3)), (uint32_t)exception_handler_syscall, KERNEL_SELECTOR_CS,
-                  SEG_P_PRESENT | SEG_DPL3 | GATE_TYPE_SYSCALL | SYSCALL_PARAM_COUNT);
+    gate_desc_set((gate_desc_t*)(gdt_table + (SELECTOR_SYSCALL >> 3)), (uint32_t)exception_handler_syscall,
+                  KERNEL_SELECTOR_CS, GATE_P_PRESENT | GATE_DPL3 | GATE_TYPE_SYSCALL | SYSCALL_PARAM_COUNT);
 
     // 加载GDT表
     lgdt((uint32_t)gdt_table, sizeof(gdt_table));
