@@ -32,6 +32,7 @@ typedef struct task_t
     int slice_ticks;              // 时间片剩余ticks数
     int time_ticks;               // 进程已运行ticks数
     int sleep_ticks;              // 进程睡眠ticks数
+    uint32_t pid;                 // 进程ID
 } task_t;
 
 typedef struct task_manager_t
@@ -65,6 +66,8 @@ void task_set_block(task_t* task);
 void sys_sched_yield(void);
 
 int sys_sleep(uint32_t ms);
+
+int sys_getpid(void);
 
 task_t* task_next_run(void);
 

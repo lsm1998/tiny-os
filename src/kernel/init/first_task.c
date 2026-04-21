@@ -4,6 +4,9 @@ int first_task_main(void)
 {
     // log_printf("First task initialized.");
     // int i = 0;
+
+    int32_t pid = getpid();
+
     for (;;)
     {
         // log_printf("First task is running. Count: %d", ++i);

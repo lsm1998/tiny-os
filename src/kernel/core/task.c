@@ -81,6 +81,7 @@ void task_init(task_t* task, const char* name, int flags, uint32_t entry, uint32
     task->time_ticks = TASK_TIME_TICKS_DEFAULT;
     task->slice_ticks = task->time_ticks;
     task->sleep_ticks = 0;
+    task->pid = (uint32_t)task;
 
     irq_state_t state = irq_enter_protection();
     task_set_ready(task);
@@ -299,4 +300,14 @@ int sys_sleep(uint32_t ms)
     }
     irq_exit_protection(state);
     return 0;
+}
+
+int sys_getpid(void)
+{
+    task_t* current = g_task_manager.current_task;
+    if (current == NULL)
+    {
+        return -1;
+    }
+    return current->pid;
 }

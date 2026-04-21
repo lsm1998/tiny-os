@@ -7,6 +7,7 @@ typedef int (*syscall_handler_t)(uint32_t, uint32_t, uint32_t, uint32_t);
 
 static const syscall_handler_t sys_table[] = {
     [SYS_SLEEP] = (syscall_handler_t)sys_sleep,
+    [SYS_GETPID] = (syscall_handler_t)sys_getpid,
 };
 
 void do_handler_syscall(syscall_frame_t* frame)
@@ -17,5 +18,6 @@ void do_handler_syscall(syscall_frame_t* frame)
     }
     syscall_handler_t handler = sys_table[frame->func_id];
     int ret = handler(frame->arg0, frame->arg1, frame->arg2, frame->arg3);
+    frame->eax = ret;
     log_printf("ok, ret=%d", ret);
 }
