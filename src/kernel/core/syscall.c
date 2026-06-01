@@ -5,9 +5,15 @@
 
 typedef int (*syscall_handler_t)(uint32_t, uint32_t, uint32_t, uint32_t);
 
+void sys_print_msg(const char* fmt, int arg1, int arg2, int arg3)
+{
+    log_printf(fmt, arg1, arg2, arg3);
+}
+
 static const syscall_handler_t sys_table[] = {
     [SYS_SLEEP] = (syscall_handler_t)sys_sleep,
     [SYS_GETPID] = (syscall_handler_t)sys_getpid,
+    [SYS_PRINT_MSG] = (syscall_handler_t)sys_print_msg,
 };
 
 void do_handler_syscall(syscall_frame_t* frame)

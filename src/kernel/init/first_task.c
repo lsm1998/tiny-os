@@ -9,6 +9,7 @@ int first_task_main(void)
 
     for (;;)
     {
+        print_msg("First task is running. pid: %d", pid);
         // log_printf("First task is running. Count: %d", ++i);
         // sys_sleep(1000);
         msleep(1000);

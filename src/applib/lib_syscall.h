@@ -6,6 +6,7 @@
 
 #define SYS_SLEEP 1
 #define SYS_GETPID 2
+#define SYS_PRINT_MSG 3
 typedef struct syscall_args_t
 {
     int id;
@@ -53,6 +54,28 @@ static inline int32_t getpid()
     syscall_args_t args;
     args.id = SYS_GETPID;
     return  sys_call(&args);
+}
+
+static inline void print_msg3(const char* fmt, int arg1, int arg2, int arg3)
+{
+    syscall_args_t args;
+    args.id = SYS_PRINT_MSG;
+    args.arg0 = (int)fmt;
+    args.arg1 = arg1;
+    args.arg2 = arg2;
+    args.arg3 = arg3;
+    sys_call(&args);
+}
+
+static inline void print_msg2(const char* fmt, int arg1, int arg2)
+{
+    print_msg3(fmt, arg1, arg2, 0);
+}
+
+
+static inline void print_msg(const char* fmt, int arg1)
+{
+    print_msg3(fmt, arg1, 0, 0);
 }
 
 #endif
